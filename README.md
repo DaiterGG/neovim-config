@@ -1,1 +1,0 @@
-personal nvim config
