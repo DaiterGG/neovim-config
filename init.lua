@@ -1,47 +1,4 @@
---[[
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
 -- Set <space> as the leader key
--- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
@@ -62,7 +19,7 @@ vim.opt.number = true
 -- vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
-vim.opt.mouse = 'a'
+vim.opt.mouse = {}
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
@@ -119,7 +76,7 @@ vim.opt.scrolloff = 10
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<C-c>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -140,13 +97,16 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
---
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
-
+vim.keymap.set('n', '<a-e>', '<C-w>h')
+vim.keymap.set('n', '<a-u>', '<C-w>l')
+vim.keymap.set('n', '<a-h>', '<C-w>j')
+vim.keymap.set('n', '<a-t>', '<C-w>k')
+vim.keymap.set('n', '<a-+>', '<C-w>+')
+vim.keymap.set('n', '<a-.>', '<C-w>>', { noremap = true, silent = true })
+vim.keymap.set('n', '<a-,>', '<C-w><lt>', { noremap = true, silent = true })
+vim.keymap.set('n', '<a-+>', '<C-w>+')
+vim.keymap.set('n', '<a-->', '<C-w>-')
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -177,12 +137,7 @@ vim.opt.rtp:prepend(lazypath)
 --required by smart open
 vim.g.sqlite_clib_path = 'c:/sqlite/sqlite3.dll'
 
--- NOTE: Here is where you install your plugins.
 require('lazy').setup({
-  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  --
-  --
-  --
   -- NOTE: Disable for now (bad detections)
   --'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -211,22 +166,8 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
-  --
-  -- This is often very useful to both group configuration, as well as handle
-  -- lazy loading plugins that don't need to be loaded immediately at startup.
-  --
-  -- For example, in the following configuration, we use:
-  --  event = 'VimEnter'
-  --
-  -- which loads which-key before all the UI elements are loaded. Events can be
-  -- normal autocommands events (`:help autocmd-events`).
-  --
-  -- Then, because we use the `config` key, the configuration only runs
-  -- after the plugin has been loaded:
-  --  config = function() ... end
-
-  { -- Useful plugin to show you pending keybinds.
+  -- Useful plugin to show you pending keybinds.
+  {
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -244,7 +185,7 @@ require('lazy').setup({
           M = '<M-…> ',
           D = '<D-…> ',
           S = '<S-…> ',
-          CR = '<CR> ',
+          CR = '<Enter> ',
           Esc = '<Esc> ',
           ScrollWheelDown = '<ScrollWheelDown> ',
           ScrollWheelUp = '<ScrollWheelUp> ',
@@ -280,14 +221,8 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: Plugins can specify dependencies.
-  --
-  -- The dependencies are proper plugin specifications as well - anything
-  -- you do for a plugin at the top level, you can do for a dependency.
-  --
-  -- Use the `dependencies` key to specify the dependencies of a particular plugin
-
-  { -- Fuzzy Finder (files, lsp, etc)
+  -- Fuzzy Finder (files, lsp, etc)
+  {
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
     branch = '0.1.x',
@@ -330,26 +265,27 @@ require('lazy').setup({
       -- This opens a window that shows you all of the keymaps for the current
       -- Telescope picker. This is really useful to discover what Telescope can
       -- do as well as how to actually do it!
-
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
-        extensions = {
-          ['ui-select'] = {
-            require('telescope.themes').get_dropdown(),
+        defaults = {
+          mappings = {
+            i = {
+              ['<C-h>'] = 'move_selection_next',
+              ['<C-t>'] = 'move_selection_previous',
+            },
+          },
+          -- pickers = {}
+          extensions = {
+            ['ui-select'] = {
+              require('telescope.themes').get_dropdown(),
+            },
           },
         },
       }
-
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
@@ -367,21 +303,6 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>b', builtin.buffers, { desc = '[S]earch existing [B]uffers' })
 
-      --old frecency func
-      -- vim.keymap.set('n', '<leader><leader>', function()
-      --   require('telescope').extensions.frecency.frecency {
-      --     show_scores = true,
-      --     default_workspace = 'CWD',
-      --     show_filter_column = true,
-      --     auto_validate = true,
-      --     hide_current_buffer = true,
-      --   }
-      -- end, { desc = 'Buffers with frecency' })
-
-      -- vim.keymap.set('n', '<leader><leader>', function()
-      --   require('telescope').extensions.smart_open.smart_open()
-      -- end, { noremap = true, silent = true })
-
       require('telescope').load_extension 'recent_files'
 
       -- Map a shortcut to open the picker.
@@ -390,6 +311,7 @@ require('lazy').setup({
       -- select current directory
       vim.keymap.set('n', '<leader>sc', function()
         vim.cmd 'cd %:h'
+        vim.cmd 'cd'
       end, { desc = '[S]elect [C]urrent directory' })
 
       -- select C:/ directory
@@ -430,14 +352,6 @@ require('lazy').setup({
       end, { desc = 'ColorScheme' })
     end,
   },
-
-  --Unused frecency file navigation
-  -- {
-  --   'nvim-telescope/telescope-frecency.nvim',
-  --   config = function()
-  --     require('telescope').load_extension 'frecency'
-  --   end,
-  -- },
   -- LSP Plugins
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -480,19 +394,6 @@ require('lazy').setup({
       -- language (such as `gopls`, `lua_ls`, `rust_analyzer`, etc.). These Language Servers
       -- (sometimes called LSP servers, but that's kind of like ATM Machine) are standalone
       -- processes that communicate with some "client" - in this case, Neovim!
-      --
-      -- LSP provides Neovim with features like:
-      --  - Go to definition
-      --  - Find references
-      --  - Autocompletion
-      --  - Symbol Search
-      --  - and more!
-      --
-      -- Thus, Language Servers are external tools that must be installed separately from
-      -- Neovim. This is where `mason` and related plugins come into play.
-      --
-      -- If you're wondering about lsp vs treesitter, you can check out the wonderfully
-      -- and elegantly composed help section, `:help lsp-vs-treesitter`
 
       --  This function gets run when an LSP attaches to a particular buffer.
       --    That is to say, every time a new file is opened that is associated with
@@ -620,13 +521,6 @@ require('lazy').setup({
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
 
         lua_ls = {
           -- cmd = {...},
@@ -774,29 +668,22 @@ require('lazy').setup({
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
-          ['<C-n>'] = cmp.mapping.select_next_item(),
+          ['<C-h>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          ['<C-t>'] = cmp.mapping.select_prev_item(),
 
           -- Scroll the documentation window [b]ack / [f]orward
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
-
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
-
-          -- If you prefer more traditional completion keymaps,
-          -- you can uncomment the following lines
-          --['<CR>'] = cmp.mapping.confirm { select = true },
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<C-n>'] = cmp.mapping.confirm { select = true },
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
-          ['<C-Space>'] = cmp.mapping.complete {},
+          -- ['<C-Space>'] = cmp.mapping.complete {},
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:
@@ -806,16 +693,16 @@ require('lazy').setup({
           --
           -- <c-l> will move you to the right of each of the expansion locations.
           -- <c-h> is similar, except moving you backwards.
-          ['<C-l>'] = cmp.mapping(function()
-            if luasnip.expand_or_locally_jumpable() then
-              luasnip.expand_or_jump()
-            end
-          end, { 'i', 's' }),
-          ['<C-h>'] = cmp.mapping(function()
-            if luasnip.locally_jumpable(-1) then
-              luasnip.jump(-1)
-            end
-          end, { 'i', 's' }),
+          -- ['<C-u>'] = cmp.mapping(function()
+          --   if luasnip.expand_or_locally_jumpable() then
+          --     luasnip.expand_or_jump()
+          --   end
+          -- end, { 'i', 's' }),
+          -- ['<C-e>'] = cmp.mapping(function()
+          --   if luasnip.locally_jumpable(-1) then
+          --     luasnip.jump(-1)
+          --   end
+          -- end, { 'i', 's' }),
 
           -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
           --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -1140,23 +1027,76 @@ require('lazy').setup({
   {
     'Exafunction/codeium.vim',
     config = function()
+      vim.g.codeium_disable_bindings = 1
+      --vim.g.codeium_manual = true
       -- Change '<C-g>' here to any keycode you like.
       vim.keymap.set('i', '<C-g>', function()
         return vim.fn['codeium#Accept']()
       end, { expr = true, silent = true })
-      vim.keymap.set('i', '<c-;>', function()
-        return vim.fn['codeium#CycleCompletions'](1)
+
+      vim.keymap.set('i', '<C-c>', function()
+        -- Call your custom function
+        vim.fn['codeium#Clear']()
+        -- Return default behavior for <C-c>
+        return vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
       end, { expr = true, silent = true })
-      vim.keymap.set('i', '<c-,>', function()
+
+      vim.keymap.set('i', '<C-m>', function()
+        return vim.fn['codeium#CycleOrComplete']()
+      end, { expr = true, silent = true })
+
+      vim.keymap.set('i', '<C-w>', function()
         return vim.fn['codeium#CycleCompletions'](-1)
-      end, { expr = true, silent = true })
-      vim.keymap.set('i', '<c-x>', function()
-        return vim.fn['codeium#Clear']()
       end, { expr = true, silent = true })
     end,
   },
-  --
-  -- Nem plugins goes here
+  {
+    'numToStr/Comment.nvim',
+    opts = {
+      ---Add a space b/w comment and the line
+      padding = false,
+      ---Whether the cursor should stay at its position
+      sticky = true,
+      ---Lines to be ignored while (un)comment
+      ignore = '^[%s]*$',
+      ---LHS of toggle mappings in NORMAL mode
+      toggler = {
+        ---Line-comment toggle keymap
+        line = 'gcc',
+        ---Block-comment toggle keymap
+        block = 'gbc',
+      },
+      ---LHS of operator-pending mappings in NORMAL and VISUAL mode
+      opleader = {
+        ---Line-comment keymap
+        line = 'gc',
+        ---Block-comment keymap
+        block = 'gb',
+      },
+      ---LHS of extra mappings
+      extra = {
+        ---Add comment on the line above
+        above = 'gcO',
+        ---Add comment on the line below
+        below = 'gco',
+        ---Add comment at the end of line
+        eol = 'gcA',
+      },
+      ---Enable keybindings
+      ---NOTE: If given `false` then the plugin won't create any mappings
+      mappings = {
+        ---Operator-pending mapping; `gcc` `gbc` `gc[count]{motion}` `gb[count]{motion}`
+        basic = true,
+        ---Extra mapping; `gco`, `gcO`, `gcA`
+        extra = true,
+      },
+      ---Function to call before (un)comment
+      pre_hook = nil,
+      ---Function to call after (un)comment
+      post_hook = nil,
+    },
+  },
+  -- New plugins go here
   --
   --
   --
@@ -1196,7 +1136,11 @@ require('lazy').setup({
 require('nvim-treesitter.install').compilers = { 'zig' }
 require('nvim-treesitter.install').prefer_git = false
 
---normal mode
+-- Insert mode
+vim.api.nvim_set_keymap('i', '<CR>', '<CR>', { noremap = true, silent = true })
+
+-- Normal mode
+
 vim.api.nvim_set_keymap('n', 'e', 'h', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<C-e>', 'b', { noremap = true, silent = true })
@@ -1215,7 +1159,7 @@ vim.api.nvim_set_keymap('n', 't', 'gk', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<C-t>', '<C-u>', { noremap = true, silent = true })
 
---visual mode
+-- Visual mode
 vim.api.nvim_set_keymap('v', 'e', 'h', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('v', '<C-e>', 'b', { noremap = true, silent = true })
