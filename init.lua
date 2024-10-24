@@ -1054,7 +1054,7 @@ require('lazy').setup({
     'numToStr/Comment.nvim',
     opts = {
       ---Add a space b/w comment and the line
-      padding = false,
+      padding = true,
       ---Whether the cursor should stay at its position
       sticky = true,
       ---Lines to be ignored while (un)comment
@@ -1149,6 +1149,8 @@ vim.api.nvim_set_keymap('n', 'u', 'l', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', 'l', 'u', { noremap = true, silent = true })
 
+vim.api.nvim_set_keymap('n', 'L', 'U', { noremap = true, silent = true })
+
 vim.api.nvim_set_keymap('n', '<C-u>', 'e', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', 'h', 'gj', { noremap = true, silent = true })
@@ -1156,6 +1158,8 @@ vim.api.nvim_set_keymap('n', 'h', 'gj', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-h>', '<C-d>', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', 't', 'gk', { noremap = true, silent = true })
+
+vim.api.nvim_set_keymap('n', 'k', 't', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<C-t>', '<C-u>', { noremap = true, silent = true })
 
@@ -1203,6 +1207,14 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.opt.expandtab = true
     vim.opt.tabstop = 2
     vim.opt.shiftwidth = 2
+  end,
+})
+
+-- Autocmd for terminal
+vim.api.nvim_create_autocmd('TermOpen', {
+  pattern = '*',
+  callback = function()
+    vim.cmd 'startinsert'
   end,
 })
 
