@@ -943,6 +943,9 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    config = function()
+      --vim.api.nvim_set_hl(0, '@markup.underline', { underline = false })
+    end,
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = {
@@ -1096,6 +1099,14 @@ require('lazy').setup({
       post_hook = nil,
     },
   },
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    ---@module "ibl"
+    ---@type ibl.config
+    opts = {},
+  },
+
   -- New plugins go here
   --
   --
@@ -1218,7 +1229,9 @@ vim.api.nvim_create_autocmd('TermOpen', {
   end,
 })
 
--- To disable unwanted tab settings
+-- relative line numbers
+vim.wo.relativenumber = true
+
 vim.g.editorconfig = false
 
 --color scheme by default
