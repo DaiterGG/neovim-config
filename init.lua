@@ -500,6 +500,7 @@ require('lazy').setup({
       --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+      capabilities.textDocument.completion.completionItem.snippetSupport = true
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -511,14 +512,20 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        csharp_ls = {
+        csharpier = {
+          filetypes = { 'cs' },
+        },
+        rzls = {
+          filetypes = { 'razor' },
+        },
+        roslyn = {
           filetypes = { 'cs', 'razor' },
         },
         cssls = {
           filetypes = { 'css', 'scss' },
         },
         html = {
-          filetypes = { 'html', 'razor' },
+          filetypes = { 'html' },
         },
         -- clangd = {},
         -- gopls = {},
@@ -549,6 +556,11 @@ require('lazy').setup({
       --
       --  You can press `g?` for help in this menu.
       require('mason').setup()
+      -- registries = {
+      --   'github:mason-org/mason-registry',
+      --   'github:crashdummyy/mason-registry',
+      -- },
+      -- }
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -571,6 +583,16 @@ require('lazy').setup({
         },
       }
     end,
+  },
+  {
+    'seblj/roslyn.nvim',
+    ft = { 'cs', 'razor' },
+    opts = {},
+  },
+  {
+    'tris203/rzls.nvim',
+    opts = {},
+    config = function() end,
   },
 
   { -- Autoformat
@@ -651,6 +673,8 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+
+      --Enable (broadcasting) snippet capability for completion
     },
     config = function()
       -- See `:help cmp`
@@ -757,37 +781,6 @@ require('lazy').setup({
     'morhetz/gruvbox',
     priority = 1000, -- Make sure to load this before all the other start plugins.
   },
-
-  --Unused theme for potential customization
-  -- {
-  --   'qaptoR-nvim/chocolatier.nvim',
-  --   priority = 1000,
-  --   config = true,
-  --   opts = {
-  --     terminal_colors = true, -- add neovim terminal colors
-  --     undercurl = true,
-  --     underline = true,
-  --     bold = true,
-  --     italic = {
-  --       strings = false,
-  --       emphasis = false,
-  --       comments = false,
-  --       operators = false,
-  --       folds = false,
-  --     },
-  --     strikethrough = true,
-  --     invert_selection = false,
-  --     invert_signs = false,
-  --     invert_tabline = false,
-  --     invert_intend_guides = false,
-  --     inverse = true, -- invert background for search, diffs, statuslines and errors
-  --     contrast = 'hard', -- can be "hard", "soft" or empty string
-  --     palette_overrides = {},
-  --     overrides = {},
-  --     dim_inactive = false,
-  --     transparent_mode = false,
-  --   },
-  -- },
 
   --Startup screen/navigation
   {
@@ -953,7 +946,7 @@ require('lazy').setup({
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     config = function()
-      --vim.api.nvim_set_hl(0, '@markup.underline', { underline = false })
+      -- vim.api.nvim_set_hl(0, '@markup.underline', { underline = false })
     end,
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
@@ -1036,32 +1029,32 @@ require('lazy').setup({
   'smartpde/telescope-recent-files',
 
   --CODEUM
-  {
-    'Exafunction/codeium.vim',
-    config = function()
-      vim.g.codeium_disable_bindings = 1
-      --vim.g.codeium_manual = true
-      -- Change '<C-g>' here to any keycode you like.
-      vim.keymap.set('i', '<C-g>', function()
-        return vim.fn['codeium#Accept']()
-      end, { expr = true, silent = true })
+  -- {
+  --   'Exafunction/codeium.vim',
+  --   config = function()
+  --     vim.g.codeium_disable_bindings = 1
+  --     --vim.g.codeium_manual = true
+  --     -- Change '<C-g>' here to any keycode you like.
+  --     vim.keymap.set('i', '<C-g>', function()
+  --       return vim.fn['codeium#Accept']()
+  --     end, { expr = true, silent = true })
 
-      vim.keymap.set('i', '<C-c>', function()
-        -- Call your custom function
-        vim.fn['codeium#Clear']()
-        -- Return default behavior for <C-c>
-        return vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
-      end, { expr = true, silent = true })
+  --     vim.keymap.set('i', '<C-c>', function()
+  --       -- Call your custom function
+  --       vim.fn['codeium#Clear']()
+  --       -- Return default behavior for <C-c>
+  --       return vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
+  --     end, { expr = true, silent = true })
 
-      vim.keymap.set('i', '<C-m>', function()
-        return vim.fn['codeium#CycleOrComplete']()
-      end, { expr = true, silent = true })
+  --     vim.keymap.set('i', '<C-m>', function()
+  --       return vim.fn['codeium#CycleOrComplete']()
+  --     end, { expr = true, silent = true })
 
-      vim.keymap.set('i', '<C-w>', function()
-        return vim.fn['codeium#CycleCompletions'](-1)
-      end, { expr = true, silent = true })
-    end,
-  },
+  --     vim.keymap.set('i', '<C-w>', function()
+  --       return vim.fn['codeium#CycleCompletions'](-1)
+  --     end, { expr = true, silent = true })
+  --   end,
+  -- },
   {
     'numToStr/Comment.nvim',
     opts = {
@@ -1202,6 +1195,35 @@ require('lazy').setup({
       }
     end,
   },
+  -- SUPERMAVEN
+  {
+    'supermaven-inc/supermaven-nvim',
+    config = function()
+      require('supermaven-nvim').setup {
+        keymaps = {
+          accept_suggestion = '<C-g>',
+          clear_suggestion = '<C-z>',
+          accept_word = '<C-b>',
+        },
+        ignore_filetypes = {}, -- or { "cpp", }
+        color = {
+          suggestion_color = '#536555',
+        },
+        disable_keymaps = false, -- disables built in keymaps for more manual control
+        condition = function()
+          return false
+        end, -- condition to check for stopping supermaven, `true` means to stop supermaven when the condition is true.
+      }
+    end,
+  },
+  --FOLD UFO
+  {
+    'kevinhwang91/nvim-ufo',
+  },
+
+  {
+    'kevinhwang91/promise-async',
+  },
   -- New plugins go here
   --
   --
@@ -1235,17 +1257,16 @@ require('lazy').setup({
   },
 })
 
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
-
--- Somone mention that zig is better for windows
-require('nvim-treesitter.install').compilers = { 'zig' }
-require('nvim-treesitter.install').prefer_git = false
-
 -- Insert mode
 vim.api.nvim_set_keymap('i', '<CR>', '<CR>', { noremap = true, silent = true })
 
 -- Normal mode
+
+-- Using ufo provider need remap `zR` and `zM`. If Neovim is 0.6.1, remap yourself
+vim.keymap.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
+vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
+vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
+
 -- MoveLine
 vim.api.nvim_set_keymap('n', 'H', 'ddp', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'T', 'ddkP', { noremap = true, silent = true })
@@ -1296,6 +1317,13 @@ vim.api.nvim_set_keymap('v', 't', 'gk', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('v', '<C-t>', '<C-u>', { noremap = true, silent = true })
 
+-- The line beneath this is called `modeline`. See `:help modeline`
+-- vim: ts=2 sts=2 sw=2 et
+
+-- Somone mention that zig is better for windows
+require('nvim-treesitter.install').compilers = { 'clang', 'zig' }
+require('nvim-treesitter.install').prefer_git = false
+
 --Tab settings
 vim.opt.expandtab = true
 vim.bo.expandtab = true
@@ -1339,7 +1367,7 @@ vim.g.editorconfig = false
 
 --color scheme by default
 vim.cmd 'colorscheme miasma'
-vim.opt.guicursor = 'n-v-c:hor50,i:ver10'
+vim.opt.guicursor = 'n-v-c:block,i:ver10'
 
 --for global telescope search
 vim.cmd 'cd c:/'
@@ -1347,3 +1375,48 @@ vim.keymap.set('n', '<A-f>', function()
   local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
   vim.cmd('' .. pwd)
 end, { noremap = true, silent = true })
+
+require('lspconfig').html.setup {}
+
+require('roslyn').setup {
+  -- exe = {
+  --   'dotnet',
+  --   vim.fs.joinpath(vim.fn.stdpath 'data', 'roslyn', 'Microsoft.CodeAnalysis.LanguageServer.dll'),
+  -- },
+  args = {
+    '--logLevel=Information',
+    '--extensionLogDirectory=' .. vim.fs.dirname(vim.lsp.get_log_path()),
+    '--razorSourceGenerator='
+      .. vim.fs.joinpath(vim.fn.stdpath 'data' --[[@as string]], 'mason', 'packages', 'roslyn', 'libexec', 'Microsoft.CodeAnalysis.Razor.Compiler.dll'),
+    '--razorDesignTimePath=' .. vim.fs.joinpath(
+      vim.fn.stdpath 'data' --[[@as string]],
+      'mason',
+      'packages',
+      'rzls',
+      'libexec',
+      'Targets',
+      'Microsoft.NET.Sdk.Razor.DesignTime.targets'
+    ),
+  },
+  config = {
+    handlers = require 'rzls.roslyn_handlers',
+  },
+  filewatching = true,
+}
+
+-- require('rzls').setup {
+--   -- on_attach = function() end,
+--   -- capabilities = capabilities,
+-- }
+
+--FOLD UFO SETUP
+-- require('ufo').setup {
+--   provider_selector = function(bufnr, filetype, buftype)
+--     return { 'treesitter', 'indent' }
+--   end,
+-- }
+-- require('ufo').setup()
+vim.o.foldcolumn = '0' -- '0' is not bad
+vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
