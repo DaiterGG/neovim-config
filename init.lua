@@ -356,6 +356,86 @@ require('lazy').setup({
       end, { desc = 'ColorScheme' })
     end,
   },
+  -- {
+  --   'tris203/rzls.nvim',
+  --   -- opts = {
+  --   --   -- on_attach = function() end,
+  --   --   -- capabilities = capabilities,
+  --   -- },
+  -- },
+
+  -- {
+  --   'seblj/roslyn.nvim',
+  --   ft = { 'cs' },
+  --   opts = {
+  --     args = {
+  --       '--logLevel=Information',
+  --       '--extensionLogDirectory=' .. vim.fs.dirname(vim.lsp.get_log_path()),
+  --       '--razorSourceGenerator='
+  --         .. vim.fs.joinpath(vim.fn.stdpath 'data' --[[@as string]], 'mason', 'packages', 'roslyn', 'libexec', 'Microsoft.CodeAnalysis.Razor.Compiler.dll'),
+  --       '--razorDesignTimePath=' .. vim.fs.joinpath(
+  --         vim.fn.stdpath 'data' --[[@as string]],
+  --         'mason',
+  --         'packages',
+  --         'rzls',
+  --         'libexec',
+  --         'Targets',
+  --         'Microsoft.NET.Sdk.Razor.DesignTime.targets'
+  --       ),
+  --     },
+  --     config = {
+  --       -- handlers = require 'rzls.roslyn_handlers',
+  --     },
+  --     filewatching = true,
+  --     additional_vim_regex_highlighting = true,
+  --     dotnet_provide_regex_completion = true,
+  --     on_attach = function(client, bufnr)
+  --       -- NOTE: Super hacky... Don't know if I like that we set a random variable on the client
+  --       -- Seems to work though
+  --       if client.is_hacked then
+  --         return
+  --       end
+  --       client.is_hacked = true
+
+  --       -- let the runtime know the server can do semanticTokens/full now
+  --       client.server_capabilities = vim.tbl_deep_extend('force', client.server_capabilities, {
+  --         semanticTokensProvider = {
+  --           full = true,
+  --         },
+  --       })
+
+  --       -- monkey patch the request proxy
+  --       local request_inner = client.request
+  --       client.request = function(method, params, handler, req_bufnr)
+  --         if method ~= vim.lsp.protocol.Methods.textDocument_semanticTokens_full then
+  --           return request_inner(method, params, handler)
+  --         end
+
+  --         local target_bufnr = vim.uri_to_bufnr(params.textDocument.uri)
+  --         local line_count = vim.api.nvim_buf_line_count(target_bufnr)
+  --         local last_line = vim.api.nvim_buf_get_lines(target_bufnr, line_count - 1, line_count, true)[1]
+
+  --         return request_inner('textDocument/semanticTokens/range', {
+  --           textDocument = params.textDocument,
+  --           range = {
+  --             ['start'] = {
+  --               line = 0,
+  --               character = 0,
+  --             },
+  --             ['end'] = {
+  --               line = line_count - 1,
+  --               character = string.len(last_line) - 1,
+  --             },
+  --           },
+  --         }, handler, req_bufnr)
+  --       end
+  --     end,
+  --   },
+  -- },
+  {
+    'OmniSharp/omnisharp-vim',
+    ft = { 'cs' },
+  },
   -- LSP Plugins
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -406,6 +486,9 @@ require('lazy').setup({
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
         callback = function(event)
+          local client = vim.lsp.get_client_by_id(event.data.client_id)
+          client.server_capabilities.semanticTokensProvider = nil
+
           -- NOTE: Remember that Lua is a real programming language, and as such it is possible
           -- to define small helper and utility functions so you don't have to repeat yourself.
           --
@@ -512,15 +595,18 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        csharpier = {
+        omnisharp = {
           filetypes = { 'cs' },
         },
-        rzls = {
-          filetypes = { 'razor' },
-        },
-        roslyn = {
-          filetypes = { 'cs', 'razor' },
-        },
+        -- csharpier = {
+        --   filetypes = { 'cs' },
+        -- },
+        -- rzls = {
+        --   filetypes = { 'razor' },
+        -- },
+        -- roslyn = {
+        --   filetypes = { 'cs', 'razor' },
+        -- },
         cssls = {
           filetypes = { 'css', 'scss' },
         },
@@ -543,7 +629,22 @@ require('lazy').setup({
                 callSnippet = 'Replace',
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
+              diagnostics = {
+                -- disable = { 'missing-fields' }
+                globals = { 'love' },
+              },
+
+              workspace = {
+                library = {
+                  [vim.fn.expand '$VIMRUNTIME/lua'] = true,
+                  [vim.fn.expand '$VIMRUNTIME/lua/vim/lsp'] = true,
+                  [vim.fn.stdpath 'data' .. '/lazy/ui/nvchad_types'] = true,
+                  [vim.fn.stdpath 'data' .. '/lazy/lazy.nvim/lua/lazy'] = true,
+                  [vim.fn.expand '${3rd}/love2d/library'] = true,
+                },
+                maxPreload = 100000,
+                preloadFileSize = 10000,
+              },
             },
           },
         },
@@ -555,12 +656,12 @@ require('lazy').setup({
       --    :Mason
       --
       --  You can press `g?` for help in this menu.
-      require('mason').setup()
-      -- registries = {
-      --   'github:mason-org/mason-registry',
-      --   'github:crashdummyy/mason-registry',
-      -- },
-      -- }
+      require('mason').setup {
+        registries = {
+          'github:mason-org/mason-registry',
+          'github:crashdummyy/mason-registry',
+        },
+      }
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -584,17 +685,6 @@ require('lazy').setup({
       }
     end,
   },
-  {
-    'seblj/roslyn.nvim',
-    ft = { 'cs', 'razor' },
-    opts = {},
-  },
-  {
-    'tris203/rzls.nvim',
-    opts = {},
-    config = function() end,
-  },
-
   { -- Autoformat
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
@@ -750,6 +840,7 @@ require('lazy').setup({
   },
   {
     'xero/miasma.nvim',
+
     lazy = false,
     priority = 1000,
     config = function()
@@ -829,7 +920,15 @@ require('lazy').setup({
       local logo = [[
 
 
-                                              
+
+
+
+
+
+
+
+
+
        ████ ██████           █████      ██
       ███████████             █████ 
       █████████ ███████████████████ ███   ███████████
@@ -867,13 +966,13 @@ require('lazy').setup({
 
       dashboard.section.buttons.val = {
         dashboard.button('n', '  New file', ':ene <BAR> startinsert <CR>'),
-        dashboard.button('f', '  Find file', ':cd $HOME | silent Telescope find_files hidden=true no_ignore=true <CR>'),
-        dashboard.button('t', '  Find text', ':Telescope live_grep <CR>'),
-        dashboard.button('r', '󰄉  Recent files', ':Telescope oldfiles <CR>'),
+        -- dashboard.button('f', '  Find file', ':cd $HOME | silent Telescope find_files hidden=true no_ignore=true <CR>'),
+        -- dashboard.button('t', '  Find text', ':Telescope live_grep <CR>'),
+        -- dashboard.button('r', '󰄉  Recent files', ':Telescope oldfiles <CR>'),
         dashboard.button('u', '󱐥  Update plugins', '<cmd>Lazy update<CR>'),
-        dashboard.button('c', '  Settings', ':e $HOME/.config/nvim/init.lua<CR>'),
-        dashboard.button('p', '  Projects', ':e $HOME/Documents/github <CR>'),
-        dashboard.button('d', '󱗼  Dotfiles', ':e $HOME/dotfiles <CR>'),
+        -- dashboard.button('c', '  Settings', ':e $HOME/.config/nvim/init.lua<CR>'),
+        -- dashboard.button('p', '  Projects', ':e $HOME/Documents/github <CR>'),
+        -- dashboard.button('d', '󱗼  Dotfiles', ':e $HOME/dotfiles <CR>'),
         dashboard.button('q', '󰿅  Quit', '<cmd>qa<CR>'),
       }
 
@@ -895,7 +994,33 @@ require('lazy').setup({
           pcall(vim.cmd.AlphaRedraw)
         end,
       })
+      -- Hide all the unnecessary visual elements while on the dashboard, and add
+      -- them back when leaving the dashboard.
+      local group = vim.api.nvim_create_augroup('CleanDashboard', {})
 
+      vim.api.nvim_create_autocmd('User', {
+        group = group,
+        pattern = 'AlphaReady',
+        callback = function()
+          vim.opt.showtabline = 0
+          vim.opt.showmode = false
+          vim.opt.laststatus = 0
+          vim.opt.showcmd = false
+          vim.opt.ruler = false
+        end,
+      })
+
+      vim.api.nvim_create_autocmd('BufUnload', {
+        group = group,
+        pattern = '<buffer>',
+        callback = function()
+          vim.opt.showtabline = 2
+          vim.opt.showmode = true
+          vim.opt.laststatus = 3
+          vim.opt.showcmd = true
+          vim.opt.ruler = true
+        end,
+      })
       dashboard.opts.opts.noautocmd = true
       alpha.setup(dashboard.opts)
     end,
@@ -1028,33 +1153,6 @@ require('lazy').setup({
   -- },
   'smartpde/telescope-recent-files',
 
-  --CODEUM
-  -- {
-  --   'Exafunction/codeium.vim',
-  --   config = function()
-  --     vim.g.codeium_disable_bindings = 1
-  --     --vim.g.codeium_manual = true
-  --     -- Change '<C-g>' here to any keycode you like.
-  --     vim.keymap.set('i', '<C-g>', function()
-  --       return vim.fn['codeium#Accept']()
-  --     end, { expr = true, silent = true })
-
-  --     vim.keymap.set('i', '<C-c>', function()
-  --       -- Call your custom function
-  --       vim.fn['codeium#Clear']()
-  --       -- Return default behavior for <C-c>
-  --       return vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
-  --     end, { expr = true, silent = true })
-
-  --     vim.keymap.set('i', '<C-m>', function()
-  --       return vim.fn['codeium#CycleOrComplete']()
-  --     end, { expr = true, silent = true })
-
-  --     vim.keymap.set('i', '<C-w>', function()
-  --       return vim.fn['codeium#CycleCompletions'](-1)
-  --     end, { expr = true, silent = true })
-  --   end,
-  -- },
   {
     'numToStr/Comment.nvim',
     opts = {
@@ -1195,27 +1293,55 @@ require('lazy').setup({
       }
     end,
   },
-  -- SUPERMAVEN
+
+  --CODEUM
   {
-    'supermaven-inc/supermaven-nvim',
+    'Exafunction/codeium.vim',
     config = function()
-      require('supermaven-nvim').setup {
-        keymaps = {
-          accept_suggestion = '<C-g>',
-          clear_suggestion = '<C-z>',
-          accept_word = '<C-b>',
-        },
-        ignore_filetypes = {}, -- or { "cpp", }
-        color = {
-          suggestion_color = '#536555',
-        },
-        disable_keymaps = false, -- disables built in keymaps for more manual control
-        condition = function()
-          return false
-        end, -- condition to check for stopping supermaven, `true` means to stop supermaven when the condition is true.
-      }
+      vim.g.codeium_disable_bindings = 1
+      --vim.g.codeium_manual = true
+      -- Change '<C-g>' here to any keycode you like.
+      vim.keymap.set('i', '<C-g>', function()
+        return vim.fn['codeium#Accept']()
+      end, { expr = true, silent = true })
+
+      vim.keymap.set('i', '<C-c>', function()
+        -- Call your custom function
+        vim.fn['codeium#Clear']()
+        -- Return default behavior for <C-c>
+        return vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
+      end, { expr = true, silent = true })
+
+      vim.keymap.set('i', '<C-m>', function()
+        return vim.fn['codeium#CycleOrComplete']()
+      end, { expr = true, silent = true })
+
+      vim.keymap.set('i', '<C-w>', function()
+        return vim.fn['codeium#CycleCompletions'](-1)
+      end, { expr = true, silent = true })
     end,
   },
+  -- SUPERMAVEN
+  -- {
+  --   'supermaven-inc/supermaven-nvim',
+  --   config = function()
+  --     require('supermaven-nvim').setup {
+  --       keymaps = {
+  --         accept_suggestion = '<C-g>',
+  --         clear_suggestion = '<C-z>',
+  --         accept_word = '<C-b>',
+  --       },
+  --       ignore_filetypes = {}, -- or { "cpp", }
+  --       color = {
+  --         suggestion_color = '#536555',
+  --       },
+  --       disable_keymaps = false, -- disables built in keymaps for more manual control
+  --       condition = function()
+  --         return false
+  --       end, -- condition to check for stopping supermaven, `true` means to stop supermaven when the condition is true.
+  --     }
+  --   end,
+  -- },
   --FOLD UFO
   {
     'kevinhwang91/nvim-ufo',
@@ -1224,6 +1350,22 @@ require('lazy').setup({
   {
     'kevinhwang91/promise-async',
   },
+
+  -- using lazy.nvim
+  {
+    'S1M0N38/love2d.nvim',
+    cmd = 'LoveRun',
+    opts = {},
+    keys = {
+      { '<leader>v', ft = 'lua', desc = 'LÖVE' },
+      { '<leader>vv', '<cmd>LoveRun<cr>', ft = 'lua', desc = 'Run LÖVE' },
+      { '<leader>vs', '<cmd>LoveStop<cr>', ft = 'lua', desc = 'Stop LÖVE' },
+    },
+  },
+  {
+    'andweeb/presence.nvim',
+  },
+
   -- New plugins go here
   --
   --
@@ -1268,8 +1410,8 @@ vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
 vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
 
 -- MoveLine
-vim.api.nvim_set_keymap('n', 'H', 'ddp', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', 'T', 'ddkP', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'H', ':m .+1<CR>==', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'T', ':m .-2<CR>==', { noremap = true, silent = true })
 
 -- Jump to previous locations
 vim.api.nvim_set_keymap('n', 'gh', '<C-i>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Next Location' })
@@ -1290,13 +1432,13 @@ vim.api.nvim_set_keymap('n', '<C-u>', 'e', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', 'h', 'gj', { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<C-h>', '<C-d>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-h>', 'jjjjjjjjjjj', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', 't', 'gk', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', 'k', 't', { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<C-t>', '<C-u>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-t>', 'kkkkkkkkkkk', { noremap = true, silent = true })
 
 -- Visual mode
 vim.api.nvim_set_keymap('v', 'e', 'h', { noremap = true, silent = true })
@@ -1311,11 +1453,15 @@ vim.api.nvim_set_keymap('v', '<C-u>', 'e', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('v', 'h', 'gj', { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('v', '<C-h>', '<C-d>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<C-h>', 'jjjjjjjjjjj', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('v', 't', 'gk', { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('v', '<C-t>', '<C-u>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<C-t>', 'kkkkkkkkkkk', { noremap = true, silent = true })
+
+-- MoveLine
+vim.api.nvim_set_keymap('v', 'H', ":m '>+1<CR>gv=gv", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'T', ":m '<-2<CR>gv=gv", { noremap = true, silent = true })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
@@ -1376,46 +1522,14 @@ vim.keymap.set('n', '<A-f>', function()
   vim.cmd('' .. pwd)
 end, { noremap = true, silent = true })
 
-require('lspconfig').html.setup {}
-
-require('roslyn').setup {
-  -- exe = {
-  --   'dotnet',
-  --   vim.fs.joinpath(vim.fn.stdpath 'data', 'roslyn', 'Microsoft.CodeAnalysis.LanguageServer.dll'),
-  -- },
-  args = {
-    '--logLevel=Information',
-    '--extensionLogDirectory=' .. vim.fs.dirname(vim.lsp.get_log_path()),
-    '--razorSourceGenerator='
-      .. vim.fs.joinpath(vim.fn.stdpath 'data' --[[@as string]], 'mason', 'packages', 'roslyn', 'libexec', 'Microsoft.CodeAnalysis.Razor.Compiler.dll'),
-    '--razorDesignTimePath=' .. vim.fs.joinpath(
-      vim.fn.stdpath 'data' --[[@as string]],
-      'mason',
-      'packages',
-      'rzls',
-      'libexec',
-      'Targets',
-      'Microsoft.NET.Sdk.Razor.DesignTime.targets'
-    ),
-  },
-  config = {
-    handlers = require 'rzls.roslyn_handlers',
-  },
-  filewatching = true,
-}
-
--- require('rzls').setup {
---   -- on_attach = function() end,
---   -- capabilities = capabilities,
--- }
-
---FOLD UFO SETUP
+-- FOLD UFO SETUP
 -- require('ufo').setup {
 --   provider_selector = function(bufnr, filetype, buftype)
 --     return { 'treesitter', 'indent' }
 --   end,
 -- }
--- require('ufo').setup()
+require('ufo').setup()
+
 vim.o.foldcolumn = '0' -- '0' is not bad
 vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
 vim.o.foldlevelstart = 99
