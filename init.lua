@@ -15,12 +15,26 @@ vim.g.have_nerd_font = true
 -- see `:help vim.opt`
 -- note: you can change these options as you wish!
 --  for more options, you can see `:help option-list`
+vim.g.undotree_DiffCommand = 'FC'
+
+vim.opt.equalalways = false
+vim.g.equalalways = false
 
 -- Make line numbers default
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = false
+
+-- indent fix
+vim.api.nvim_create_autocmd('VimEnter', {
+  callback = function()
+    vim.cmd 'set formatoptions-=r'
+    vim.cmd 'set formatoptions-=c'
+    vim.cmd 'set formatoptions-=o'
+  end,
+})
+-- Enable break indent
+vim.opt.breakindent = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = {}
@@ -35,6 +49,9 @@ vim.opt.showmode = false
 vim.schedule(function()
   vim.opt.clipboard = 'unnamed'
 end)
+
+local opts = { noremap = true, silent = true }
+local vk = vim.keymap
 
 -- Enable break indent
 vim.opt.breakindent = true
@@ -78,22 +95,11 @@ vim.opt.scrolloff = 10
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
--- Diagnostic keymaps
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-
--- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
--- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
--- is not what someone will guess without a bit more experience.
---
--- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
--- or just use <C-\><C-n> to exit terminal mode
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
-
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+-- vk.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+-- vk.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+-- vk.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+-- vk.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
@@ -109,8 +115,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 --sqlite hookup
 --required by smart open
 vim.g.sqlite_clib_path = 'c:/sqlite/sqlite3.dll'
-
-local opts = { noremap = true, silent = true }
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -285,13 +289,62 @@ require('lazy').setup({
   {
     'aaron-p1/match-visual.nvim',
   },
+  -- {
+  --   'jiaoshijie/undotree',
+  --   dependencies = 'nvim-lua/plenary.nvim',
+  --   config = true,
+  --   opts = {
+  --     float_diff = true, -- using float window previews diff, set this `true` will disable layout option
+  --     layout = 'left_left_bottom', -- "left_bottom", "left_left_bottom"
+  --     position = 'left', -- "right", "bottom"
+  --     ignore_filetype = { 'undotree', 'undotreeDiff', 'qf', 'TelescopePrompt', 'spectre_panel', 'tsplayground' },
+  --     window = {
+  --       winblend = 40,
+  --     },
+  --     -- keymaps = {
+  --     --   ['j'] = 'move_next',
+  --     --   ['k'] = 'move_prev',
+  --     --   ['gj'] = 'move2parent',
+  --     --   ['J'] = 'move_change_next',
+  --     --   ['K'] = 'move_change_prev',
+  --     --   ['<cr>'] = 'action_enter',
+  --     --   ['p'] = 'enter_diffbuf',
+  --     --   ['q'] = 'quit',
+  --     -- },
+  --   },
+  --   keys = {
+  --     { '<leader>l', "<cmd>lua require('undotree').toggle()<cr>" },
+  --   },
+  -- },
   {
-    'jiaoshijie/undotree',
-    dependencies = 'nvim-lua/plenary.nvim',
-    config = true,
-    keys = {
-      { '<leader>l', "<cmd>lua require('undotree').toggle()<cr>" },
-    },
+    'mbbill/undotree',
+    lazy = false,
+    cmd = 'UndotreeToggle',
+    config = function()
+      vim.cmd [[
+        let g:undotree_WindowLayout=1
+            let g:undotree_DiffpanelHeight=10
+            " let g:undotree_DiffCommand = "delta"
+            let g:undotree_SetFocusWhenToggle = 1
+            let g:undotree_DiffCommand = "FC"
+            let g:undotree_DiffAutoOpen = 0
+
+            " if has("persistent_undo")
+            "     let target_path = expand('~/.undodir')
+
+            "     " create the directory and any parent directories
+            "     " if the location does not exist.
+            "     if !isdirectory(target_path)
+            "         call mkdir(target_path, "p", 0700)
+            "     endif
+
+            "     let &undodir=target_path
+            "     set undofile
+            " endif
+        ]]
+
+      vk.set('n', '<leader>l', vim.cmd.UndotreeToggle, opts)
+    end,
   },
   {
     'tpope/vim-fugitive',
@@ -333,131 +386,169 @@ require('lazy').setup({
   },
 })
 
-vim.keymap.set('c', '<C-h>', require('cmp').mapping.select_next_item(), opts)
-vim.keymap.set('c', '<C-t>', require('cmp').mapping.select_prev_item(), opts)
-vim.keymap.set('c', '<C-n>', '<C-t><C-h>', { remap = true })
+local c_c = vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
 
--- vim.api.nvim_set_keymap('t', '<C-c>', '<C-\\><C-n>', opts)
-vim.api.nvim_set_keymap('n', '<C-c>', '<cmd>nohlsearch<CR><C-c>', opts)
--- vim.api.nvim_set_keymap('v', '<C-c>', '<Esc>', opts)
--- vim.api.nvim_set_keymap('i', '<C-c>', '<Esc>', opts)
+-- NOTE: Command mode keymap
+vk.set('c', '<C-h>', require('cmp').mapping.select_next_item(), opts)
+vk.set('c', '<C-t>', require('cmp').mapping.select_prev_item(), opts)
+vk.set('c', '<C-n>', '<C-t><C-h>', { remap = true })
+
+vk.set('c', '<c-e>', '<left>', { noremap = false })
+vk.set('c', '<c-u>', '<right>', { noremap = false })
 
 -- NOTE: Terminal mode keymap
-vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', opts)
+vk.set('t', '<Esc>', '<C-\\><C-n>', opts)
+
+vk.set('t', '<A-e>', '<C-\\><C-n><C-w>h', { remap = true })
+vk.set('t', '<A-u>', '<C-\\><C-n><C-w>l', { remap = true })
+vk.set('t', '<A-h>', '<C-\\><C-n><C-w>j', { remap = true })
+vk.set('t', '<A-t>', '<C-\\><C-n><C-w>k', { remap = true })
+vk.set('t', '<A-.>', '<C-\\><C-n><C-w>>a', { remap = true })
+vk.set('t', '<A-,>', '<C-\\><C-n><C-w><lt>a', { remap = true })
+vk.set('t', '<A-+>', '<C-\\><C-n><C-w>+a', { remap = true })
+vk.set('t', '<A-->', '<C-\\><C-n><C-w>-a', { remap = true })
+-- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
+-- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
+-- is not what someone will guess without a bit more experience.
+--
+-- or just use <C-\><C-n> to exit terminal mode
+-- vk.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- NOTE: Insert mode keymap
+--
+vk.set('i', '<esc>', function()
+  vim.api.nvim_feedkeys(c_c, 'm', false)
+  local tl = require 'telescope'
+  if tl.active then
+    tl.actions.close()
+  end
+end, opts)
 
-vim.api.nvim_set_keymap('i', '<CR>', '<CR>', opts)
-vim.api.nvim_set_keymap('i', '<A-h>', '<C-c><C-w>j', opts)
-vim.api.nvim_set_keymap('i', '<A-t>', '<C-c><C-w>k', opts)
+-- vk.set('i', '<CR>', '<CR>', opts)
+-- vk.set('i', '<A-h>', '<C-c><C-w>j', opts)
+-- vk.set('i', '<A-t>', '<C-c><C-w>k', opts)
 
 -- NOTE: Normal mode keymap
+vk.set('n', '<esc>', function()
+  vim.cmd 'nohlsearch'
+  vim.api.nvim_feedkeys(c_c, 'm', false)
+  local mc = require 'multicursor-nvim'
+  mc.clearCursors()
+end, opts)
+
+vk.set('n', '<CR>', 'A<CR><Esc>', opts)
+
+-- Diagnostic keymaps
+vk.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- split screen keymaps
-vim.keymap.set('n', '<a-e>', '<C-w>h')
-vim.keymap.set('n', '<a-u>', '<C-w>l')
-vim.keymap.set('n', '<a-h>', '<C-w>j')
-vim.keymap.set('n', '<a-t>', '<C-w>k')
-vim.keymap.set('n', '<a-+>', '<C-w>+')
-vim.keymap.set('n', '<a-.>', '<C-w>>', opts)
-vim.keymap.set('n', '<a-,>', '<C-w><lt>', opts)
-vim.keymap.set('n', '<a-+>', '<C-w>+')
-vim.keymap.set('n', '<a-->', '<C-w>-')
+vk.set('n', '<a-e>', '<C-w>h')
+vk.set('n', '<a-u>', '<C-w>l')
+vk.set('n', '<a-h>', '<C-w>j')
+vk.set('n', '<a-t>', '<C-w>k')
+vk.set('n', '<a-.>', '<C-w>>', opts)
+vk.set('n', '<a-,>', '<C-w><lt>', opts)
+vk.set('n', '<a-+>', '<C-w>+')
+vk.set('n', '<a-->', '<C-w>-')
+
+-- tabs
+vk.set('n', '<leader><tab>', ':tabnext<CR>')
 
 -- open terminal
-vim.keymap.set(
-  'n',
-  '<leader>no',
-  '<C-w>k<C-w>k<C-w>k<C-w>o<C-w>o<C-w>o<C-w>o:sp<CR>:term<CR><C-\\><C-n><C-w>18-G<C-w>k',
-  { noremap = true, silent = true, desc = 'Open Consol Tile Window' }
-)
+vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[Open] [T]erminal Tile' })
 
-vim.api.nvim_set_keymap('n', '<Leader>a', ":lua require('neogen').generate()<CR>", opts)
+vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", opts)
 
 -- Quick save
-vim.keymap.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
+vk.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
 
 -- Using ufo provider need remap `zR` and `zM`. If Neovim is 0.6.1, remap yourself
 -- folds
-vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
-vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
+vk.set('n', 'zR', require('ufo').openAllFolds)
+vk.set('n', 'zM', require('ufo').closeAllFolds)
 
 -- Jump to previous locations
-vim.api.nvim_set_keymap('n', 'gh', '<C-i>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Next Location' })
-vim.api.nvim_set_keymap('n', 'gt', '<C-o>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Previous Location' })
+-- vk.set('n', 'gh', '<C-i>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Next Location' })
+-- vk.set('n', 'gt', '<C-o>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Previous Location' })
+vk.set('n', 'gh', ':USE C-i<CR>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Next Location' })
+vk.set('n', 'gt', ':USE C-o<CR>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Previous Location' })
 
 -- Navigation rebind
-vim.api.nvim_set_keymap('n', 'k', 't', opts)
-vim.api.nvim_set_keymap('n', 't', 'gk', opts) -- up
+vk.set('n', 'k', 't', opts)
+vk.set('n', 't', 'gk', opts) -- up
 
-vim.api.nvim_set_keymap('n', 'h', 'gj', opts) -- down
-vim.api.nvim_set_keymap('n', 'j', 'e', opts)
-vim.api.nvim_set_keymap('n', 'e', 'h', opts) -- left
+vk.set('n', 'h', 'gj', opts) -- down
+vk.set('n', 'j', 'e', opts)
+vk.set('n', 'e', 'h', opts) -- left
 
-vim.api.nvim_set_keymap('n', 'u', 'l', opts) -- right
-vim.api.nvim_set_keymap('n', 'l', 'u', opts)
-vim.api.nvim_set_keymap('n', 'L', 'U', opts)
+vk.set('n', 'u', 'l', opts) -- right
+vk.set('n', 'l', 'u', opts)
+vk.set('n', 'L', 'U', opts)
 
-vim.api.nvim_set_keymap('n', '<C-e>', 'b', opts)
-vim.api.nvim_set_keymap('n', '<C-u>', 'e', opts)
+vk.set('n', '<C-e>', '11h', opts)
+vk.set('n', '<C-u>', '11l', opts)
 
-vim.api.nvim_set_keymap('n', '<C-h>', '11j', opts)
-vim.api.nvim_set_keymap('n', '<C-t>', '11k', opts)
+vk.set('n', '<C-h>', '11j', opts)
+vk.set('n', '<C-t>', '11k', opts)
 
 -- MoveLine
-vim.api.nvim_set_keymap('n', 'H', ':m .+1<CR>==', opts)
-vim.api.nvim_set_keymap('n', 'T', ':m .-2<CR>==', opts)
+vk.set('n', 'H', ':m .+1<CR>==', opts)
+vk.set('n', 'T', ':m .-2<CR>==', opts)
 
 -- NOTE: Formating stuff
-toggle_format = true
+local toggle_format = true
 -- toggle autoformat
-vim.keymap.set('n', '<leader>uf', function()
+vk.set('n', '<leader>tf', function()
   toggle_format = not toggle_format
-end, { noremap = true, silent = true, desc = 'Toggle Format On Save' })
+end, { noremap = true, silent = true, desc = '[T]oggle [F]ormat On Save' })
 
 --Auto formatting
 vim.api.nvim_create_autocmd('BufWritePre', {
   callback = function()
     if toggle_format then
-      require('conform').format { async = true, lsp_format = 'fallback' }
+      require('conform').format { async = false, lsp_format = 'fallback' }
     end
   end,
 })
 -- Manual formating
-vim.keymap.set('n', '<leader>f', function()
+vk.set('n', '<leader>f', function()
   require('conform').format { async = true, lsp_format = 'fallback' }
 end, { noremap = true, silent = true, desc = '[F]ormat Document' })
 
 -- NOTE: Visual mode keymap
 
-vim.api.nvim_set_keymap('v', 'e', 'h', opts)
+vk.set('v', 'e', 'h', opts)
 
-vim.api.nvim_set_keymap('v', '<C-e>', 'b', opts)
+vk.set('v', '<C-e>', '11h', opts)
 
-vim.api.nvim_set_keymap('v', 'u', 'l', opts)
+vk.set('v', '<C-u>', '11l', opts)
 
-vim.api.nvim_set_keymap('v', 'l', 'u', opts)
+vk.set('v', 'u', 'l', opts)
 
-vim.api.nvim_set_keymap('v', '<C-u>', 'e', opts)
+vk.set('v', 'l', 'u', opts)
 
-vim.api.nvim_set_keymap('v', 'h', 'gj', opts)
+vk.set('v', 'h', 'gj', opts)
 
-vim.api.nvim_set_keymap('v', '<C-h>', '11j', opts)
+vk.set('v', 't', 'gk', opts)
 
-vim.api.nvim_set_keymap('v', 't', 'gk', opts)
+vk.set('v', '<C-h>', '11j', opts)
 
-vim.api.nvim_set_keymap('v', '<C-t>', '11k', opts)
+vk.set('v', '<C-t>', '11k', opts)
+
+-- vk.set('v', '$', '$h', opts)
 
 -- MoveLine
-vim.api.nvim_set_keymap('v', 'H', ":m '>+1<CR>gv=gv", opts)
-vim.api.nvim_set_keymap('v', 'T', ":m '<-2<CR>gv=gv", opts)
+vk.set('v', 'H', ":m '>+1<CR>gv=gv", opts)
+vk.set('v', 'T', ":m '<-2<CR>gv=gv", opts)
 
 --Paste over
-vim.api.nvim_set_keymap('v', 'p', 'P', opts)
-vim.api.nvim_set_keymap('v', 'P', 'p', opts)
+vk.set('v', 'p', 'P', opts)
+vk.set('v', 'P', 'p', opts)
 
 --Replace
-vim.api.nvim_set_keymap('v', '<C-r>', 'y:%s/<C-r>"/<C-r>"/gc<Left><Left><Left>', opts)
+vk.set('v', '<C-r>', 'y:%s/<C-r>"/<C-r>"/gc<Left><Left><Left>', { remap = true })
+
+-- vk.set('v', '<C-_>', 'y/<C-r>"<CR>', { remap = true })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
@@ -472,24 +563,24 @@ local dir_config = require 'autodir'
 
 -- Noita run
 dir_config.setup_directory_config('Noita', function()
-  vim.keymap.set(
+  vk.set(
     'n',
     '<leader>nn',
     '<C-w>k<C-w>k<C-w>k<C-w>o<C-w>o<C-w>o<C-w>o:sp<CR>:term<CR>D:<CR>cd D:/SteamLibrary/steamapps/common/Noita<CR>noita_dev.exe<CR><C-\\><C-n><C-w>18-G<C-w>k',
-    opts
+    { noremap = true, silent = true, desc = 'Open noita_dev' }
   )
-  vim.keymap.set(
+  vk.set(
     'n',
     '<leader>nt',
     ':sp<CR>:term<CR>D:<CR>cd D:/SteamLibrary/steamapps/common/Noita/mods/kickining_way<CR>D:/SteamLibrary/steamapps/common/Noita/noita.exe -splice_pixel_scene files/biome_impl/level/wang.png -x 3000 -y 3000<CR><C-\\><C-n>:q<CR><C-w>18+',
-    opts
+    { noremap = true, silent = true, desc = 'Build map' }
   )
 end)
 
 -- For LOVE
 dir_config.setup_directory_config('LOVE', function()
-  vim.keymap.set('n', '<leader>nn', '<cmd>w<cr><cmd>LoveRun<cr>', { desc = 'Run LÖVE' })
-  vim.keymap.set('n', '<leader>nt', '<cmd>LoveStop<cr>', { desc = 'Stop LÖVE' })
+  vk.set('n', '<leader>nr', '<cmd>w<cr><cmd>LoveRun<cr>', { desc = 'Run LÖVE' })
+  vk.set('n', '<leader>ns', '<cmd>LoveStop<cr>', { desc = 'Stop LÖVE' })
 end)
 
 -- NOTE: Tab settings
@@ -578,9 +669,6 @@ vim.api.nvim_create_autocmd('ExitPre', {
   end,
 })
 
--- relative line numbers
-vim.wo.relativenumber = true
-
 vim.g.editorconfig = false
 
 --color scheme by default
@@ -593,7 +681,7 @@ pcall(function()
 end)
 vim.cmd 'cd'
 
-vim.keymap.set('n', '<leader>tt', function()
+vk.set('n', '<leader>tt', function()
   local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
   vim.cmd('' .. pwd)
 end, { desc = '[T]ree [T]oggle', noremap = true, silent = true })

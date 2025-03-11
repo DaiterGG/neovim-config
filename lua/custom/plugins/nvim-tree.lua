@@ -11,6 +11,7 @@ return {
         sort_by = 'desc',
       },
       view = {
+        preserve_window_proportions = true,
         width = 40,
       },
       renderer = {

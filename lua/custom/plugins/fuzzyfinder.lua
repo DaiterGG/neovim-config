@@ -57,6 +57,8 @@ return {
           i = {
             ['<C-h>'] = 'move_selection_next',
             ['<C-t>'] = 'move_selection_previous',
+            ['<C-e>'] = 'preview_scrolling_up',
+            ['<C-u>'] = 'preview_scrolling_down',
           },
         },
         -- pickers = {}
@@ -86,10 +88,11 @@ return {
 
     require('telescope').load_extension 'recent_files'
 
-    local opts = { noremap = true, silent = true }
+    opts = { noremap = true, silent = true }
 
     -- Map a shortcut to open the picker.
-    vim.api.nvim_set_keymap('n', '<Leader><Leader>', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], opts)
+    vim.api.nvim_set_keymap('n', '<Leader><Leader>', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], { desc = 'Recent Files' })
+    vim.api.nvim_set_keymap('n', '<Leader>h', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], { desc = 'Recent Files' })
 
     -- select current directory
     vim.keymap.set('n', '<leader>sc', function()
