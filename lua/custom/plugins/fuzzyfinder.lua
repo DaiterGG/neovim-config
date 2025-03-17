@@ -83,15 +83,16 @@ return {
     vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
     vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
     vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-    vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-    vim.keymap.set('n', '<leader>b', builtin.buffers, { desc = '[S]earch existing [B]uffers' })
+    vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = '[S]earch existing [B]uffers' })
+    -- NOTE: oldfiles is bad, I use smartpde/telescope-recent-files
+    -- vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
 
     require('telescope').load_extension 'recent_files'
 
     opts = { noremap = true, silent = true }
 
     -- Map a shortcut to open the picker.
-    vim.api.nvim_set_keymap('n', '<Leader><Leader>', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], { desc = 'Recent Files' })
+    -- vim.api.nvim_set_keymap('n', '<Leader><Leader>', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], { desc = 'Recent Files' })
     vim.api.nvim_set_keymap('n', '<Leader>h', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], { desc = 'Recent Files' })
 
     -- select current directory
@@ -100,10 +101,10 @@ return {
       vim.cmd 'cd'
     end, { desc = '[S]elect [C]urrent directory' })
 
-    vim.keymap.set('n', '<leader>g', function()
+    vim.keymap.set('n', '<leader>b', function()
       vim.cmd 'cd ..'
       vim.cmd 'cd'
-    end, { desc = '[G]o back' })
+    end, { desc = 'Go [B]ack' })
 
     -- select C:/ directory
     vim.keymap.set('n', '<leader>sC', function()
@@ -118,13 +119,21 @@ return {
     end, { desc = '[S]elect [D]:/ directory' })
 
     -- overriding default behavior and theme
-    vim.keymap.set('n', '<leader>/', function()
+    vim.keymap.set(
+      'n',
+      '<leader>/',
       -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-      builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-        winblend = 10,
-        previewer = false,
-      })
-    end, { desc = '[/] Fuzzily search in current buffer' })
+      builtin.current_buffer_fuzzy_find,
+      { desc = '[/] Fuzzily search in current buffer' }
+    )
+
+    vim.keymap.set(
+      'v',
+      '<leader>/',
+      -- You can pass additional configuration to Telescope to change the theme, layout, etc.
+      'y<leader>/<C-r>">',
+      { remap = true, desc = '[/] Fuzzily search in current buffer' }
+    )
 
     -- It's also possible to pass additional configuration options.
     --  See `:help telescope.builtin.live_grep()` for information about particular keys
@@ -142,6 +151,6 @@ return {
 
     vim.keymap.set('n', '<leader>uc', function()
       builtin.colorscheme { enable_preview = true }
-    end, { desc = 'ColorScheme' })
+    end, { desc = '[U]I [C]olorScheme' })
   end,
 }

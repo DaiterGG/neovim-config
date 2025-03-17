@@ -406,15 +406,10 @@ vk.set('t', '<A-.>', '<C-\\><C-n><C-w>>a', { remap = true })
 vk.set('t', '<A-,>', '<C-\\><C-n><C-w><lt>a', { remap = true })
 vk.set('t', '<A-+>', '<C-\\><C-n><C-w>+a', { remap = true })
 vk.set('t', '<A-->', '<C-\\><C-n><C-w>-a', { remap = true })
--- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
--- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
--- is not what someone will guess without a bit more experience.
---
--- or just use <C-\><C-n> to exit terminal mode
--- vk.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- NOTE: Insert mode keymap
---
+vk.set('i', '<C-p>', '<C-r>"', opts)
+
 vk.set('i', '<esc>', function()
   vim.api.nvim_feedkeys(c_c, 'm', false)
   local tl = require 'telescope'
@@ -423,11 +418,8 @@ vk.set('i', '<esc>', function()
   end
 end, opts)
 
--- vk.set('i', '<CR>', '<CR>', opts)
--- vk.set('i', '<A-h>', '<C-c><C-w>j', opts)
--- vk.set('i', '<A-t>', '<C-c><C-w>k', opts)
-
 -- NOTE: Normal mode keymap
+
 vk.set('n', '<esc>', function()
   vim.cmd 'nohlsearch'
   vim.api.nvim_feedkeys(c_c, 'm', false)
@@ -451,20 +443,20 @@ vk.set('n', '<a-+>', '<C-w>+')
 vk.set('n', '<a-->', '<C-w>-')
 
 -- tabs
-vk.set('n', '<leader><tab>', ':tabnext<CR>')
+vk.set('n', '<leader><tab>', ':tabnext<CR>', { desc = 'Next tab' })
 
 -- open terminal
-vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[Open] [T]erminal Tile' })
+vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[N]ew [T]erminal tile' })
 
-vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", opts)
+vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", { desc = 'generate comments' })
 
 -- Quick save
 vk.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
 
 -- Using ufo provider need remap `zR` and `zM`. If Neovim is 0.6.1, remap yourself
 -- folds
-vk.set('n', 'zR', require('ufo').openAllFolds)
-vk.set('n', 'zM', require('ufo').closeAllFolds)
+vk.set('n', 'zR', require('ufo').openAllFolds, { desc = '[R]emove folds' })
+vk.set('n', 'zM', require('ufo').closeAllFolds, { desc = '[M]ass close folds' })
 
 -- Jump to previous locations
 -- vk.set('n', 'gh', '<C-i>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Next Location' })
@@ -487,8 +479,8 @@ vk.set('n', 'L', 'U', opts)
 vk.set('n', '<C-e>', '11h', opts)
 vk.set('n', '<C-u>', '11l', opts)
 
-vk.set('n', '<C-h>', '11j', opts)
-vk.set('n', '<C-t>', '11k', opts)
+vk.set('n', '<C-h>', '11gj', opts)
+vk.set('n', '<C-t>', '11gk', opts)
 
 -- MoveLine
 vk.set('n', 'H', ':m .+1<CR>==', opts)
@@ -516,25 +508,24 @@ end, { noremap = true, silent = true, desc = '[F]ormat Document' })
 
 -- NOTE: Visual mode keymap
 
-vk.set('v', 'e', 'h', opts)
+vk.set('v', 'k', 't', opts)
+vk.set('v', 't', 'gk', opts) -- up
+
+vk.set('v', 'h', 'gj', opts) -- down
+vk.set('v', 'j', 'e', opts)
+vk.set('v', 'e', 'h', opts) -- left
+
+vk.set('v', 'u', 'l', opts) -- right
+vk.set('v', 'l', 'u', opts)
+vk.set('v', 'L', 'U', opts)
 
 vk.set('v', '<C-e>', '11h', opts)
-
 vk.set('v', '<C-u>', '11l', opts)
 
-vk.set('v', 'u', 'l', opts)
+vk.set('v', '<C-h>', '11gj', opts)
+vk.set('v', '<C-t>', '11gk', opts)
 
-vk.set('v', 'l', 'u', opts)
-
-vk.set('v', 'h', 'gj', opts)
-
-vk.set('v', 't', 'gk', opts)
-
-vk.set('v', '<C-h>', '11j', opts)
-
-vk.set('v', '<C-t>', '11k', opts)
-
--- vk.set('v', '$', '$h', opts)
+vk.set('v', '$', '$h', opts)
 
 -- MoveLine
 vk.set('v', 'H', ":m '>+1<CR>gv=gv", opts)
@@ -545,7 +536,7 @@ vk.set('v', 'p', 'P', opts)
 vk.set('v', 'P', 'p', opts)
 
 --Replace
-vk.set('v', '<C-r>', 'y:%s/<C-r>"/<C-r>"/gc<Left><Left><Left>', { remap = true })
+vk.set('v', '<C-r>', 'y:%s/<C-r>"/<C-r>"/gc<Left><Left><Left>', { desc = 'Replace' })
 
 -- vk.set('v', '<C-_>', 'y/<C-r>"<CR>', { remap = true })
 
@@ -683,7 +674,7 @@ vim.cmd 'cd'
 vk.set('n', '<leader>tt', function()
   local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
   vim.cmd('' .. pwd)
-end, { desc = '[T]ree [T]oggle', noremap = true, silent = true })
+end, { desc = '[T]oggle [T]ree', noremap = true, silent = true })
 
 require('ufo').setup()
 
