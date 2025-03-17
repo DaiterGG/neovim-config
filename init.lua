@@ -342,8 +342,7 @@ require('lazy').setup({
             "     set undofile
             " endif
         ]]
-
-      vk.set('n', '<leader>l', vim.cmd.UndotreeToggle, opts)
+      vk.set('n', '<leader>tu', vim.cmd.UndotreeToggle, { desc = '[T]oggle [U]ndotree' })
     end,
   },
   {
