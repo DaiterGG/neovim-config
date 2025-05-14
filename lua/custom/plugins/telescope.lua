@@ -1,3 +1,8 @@
+if vim.g.vscode then
+  return {
+    'nvim-telescope/telescope.nvim',
+  }
+end
 -- Fuzzy Finder (files, lsp, etc)
 return {
   'nvim-telescope/telescope.nvim',
@@ -24,6 +29,7 @@ return {
     { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
   },
   config = function()
+    require('telescope').load_extension 'recent_files'
     require('telescope').setup {
       -- You can put your default mappings / updates / etc. in here
       --  All the info you're looking for is in `:help telescope.setup()`
@@ -38,6 +44,13 @@ return {
             table.insert(parts, part)
           end
 
+          for part in string.gmatch(path, '[^/]+') do
+            table.insert(parts, part)
+          end
+          if string.sub(parts[1], -1) == ':' then
+            parts[1] = '[' .. string.upper(parts[1]) .. ']'
+          end
+
           -- Reverse the parts
           local reversed_parts = {}
           for i = #parts, 1, -1 do
@@ -47,11 +60,11 @@ return {
 
           local flipped_path = table.concat(reversed_parts, '\\')
 
-          return (tail .. ' \\' .. flipped_path)
+          return (tail .. '   \\' .. flipped_path)
         end,
         layout_strategy = 'horizontal',
         layout_config = {
-          horizontal = { width = 0.99, height = 0.99, preview_width = 0.6 },
+          horizontal = { width = 0.999, height = 0.999, preview_width = 0.6 },
         },
         mappings = {
           i = {
@@ -65,6 +78,14 @@ return {
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
+          },
+          ['recent_files'] = {
+            only_cwd = true,
+            transform_file_path = function(path)
+              -- return vim.fn.fnamemodify(path, ':t')
+              error 'not working'
+              return ''
+            end,
           },
         },
       },
@@ -84,10 +105,9 @@ return {
     vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
     vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
     vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = '[S]earch existing [B]uffers' })
+
     -- NOTE: oldfiles is bad, I use smartpde/telescope-recent-files
     -- vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-
-    require('telescope').load_extension 'recent_files'
 
     opts = { noremap = true, silent = true }
 

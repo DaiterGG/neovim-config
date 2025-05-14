@@ -1,3 +1,6 @@
+if vim.g.vscode then
+  return {}
+end
 -- Highlight connected via blank lines code blocks
 return {
   'lukas-reineke/indent-blankline.nvim',

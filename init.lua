@@ -228,7 +228,7 @@ require('lazy').setup({
       vim.cmd.colorscheme 'miasma'
     end,
   },
-  require 'kickstart.plugins.autopairs',
+  -- require 'kickstart.plugins.autopairs',
 
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
@@ -277,17 +277,42 @@ require('lazy').setup({
     keys = {},
   },
   -- NEW DISCORD RPC
-  {
-    'IogaMaster/neocord',
-    event = 'VeryLazy',
-  },
+  -- {
+  --   'IogaMaster/neocord',
+  --   event = 'VeryLazy',
+  -- },
   -- {
   --   'andweeb/presence.nvim',
   -- },
 
   -- Cool highlight in visual mode
   {
-    'aaron-p1/match-visual.nvim',
+    'wurli/visimatch.nvim',
+    opts = {
+      -- The highlight group to apply to matched text
+      hl_group = 'CursorIM',
+      -- The minimum number of selected characters required to trigger highlighting
+      chars_lower_limit = 1,
+      -- The maximum number of selected lines to trigger highlighting for
+      lines_upper_limit = 999,
+      -- By default, visimatch will highlight text even if it doesn't have exactly
+      -- the same spacing as the selected region. You can set this to `true` if
+      -- you're not a fan of this behaviour :)
+      strict_spacing = true,
+      -- Visible buffers which should be highlighted. Valid options:
+      -- * `"filetype"` (the default): highlight buffers with the same filetype
+      -- * `"current"`: highlight matches in the current buffer only
+      -- * `"all"`: highlight matches in all visible buffers
+      -- * A function. This will be passed a buffer number and should return
+      --   `true`/`false` to indicate whether the buffer should be highlighted.
+      buffers = 'all',
+      -- Case-(in)nsitivity for matches. Valid options:
+      -- * `true`: matches will never be case-sensitive
+      -- * `false`/`{}`: matches will always be case-sensitive
+      -- * a table of filetypes to use use case-insensitive matching for.
+      case_insensitive = { --[[ 'markdown', 'text', 'help' ]]
+      },
+    },
   },
   -- {
   --   'jiaoshijie/undotree',
@@ -316,6 +341,8 @@ require('lazy').setup({
   --     { '<leader>l', "<cmd>lua require('undotree').toggle()<cr>" },
   --   },
   -- },
+
+  --toggleable undotree
   {
     'mbbill/undotree',
     lazy = false,
@@ -345,17 +372,38 @@ require('lazy').setup({
       vk.set('n', '<leader>tu', vim.cmd.UndotreeToggle, { desc = '[T]oggle [U]ndotree' })
     end,
   },
+
+  {
+    'vyfor/cord.nvim',
+  },
+  -- awersome Git wrapper
   {
     'tpope/vim-fugitive',
   },
   { 'hrsh7th/cmp-buffer' },
+
+  -- generate annotations
   {
     'danymat/neogen',
     config = true,
     -- Uncomment next line if you want to follow only stable versions
     -- version = "*"
   },
-
+  {
+    'akinsho/toggleterm.nvim',
+    version = '*',
+    opts = {
+      size = 120,
+      open_mapping = [[<leader>tt]],
+      hide_numbers = false,
+      autochdir = true,
+      persistent_size = false,
+      start_in_insert = true,
+      insert_mappings = true, -- whether or not the open mapping applies in insert mode
+      terminal_mappings = true, -- whether or not the open mapping applies in the opened terminals
+      direction = 'vertical',
+    },
+  },
   -- { 'neoclide/coc.nvim', branch = 'release' },
   -- New plugins go here
   --
@@ -398,6 +446,12 @@ vk.set('c', '<c-u>', '<right>', { noremap = false })
 -- NOTE: Terminal mode keymap
 vk.set('t', '<Esc>', '<C-\\><C-n>', opts)
 
+vk.set('t', '<C-h>', '<Down>', { remap = true })
+vk.set('t', '<C-t>', '<Up>', { remap = true })
+vk.set('t', '<C-u>', '<Right>', { remap = true })
+vk.set('t', '<C-e>', '<Left>', { remap = true })
+vk.set('t', '<A-c>', '<C-c>', { remap = true })
+
 vk.set('t', '<A-e>', '<C-\\><C-n><C-w>h', { remap = true })
 vk.set('t', '<A-u>', '<C-\\><C-n><C-w>l', { remap = true })
 vk.set('t', '<A-h>', '<C-\\><C-n><C-w>j', { remap = true })
@@ -418,6 +472,7 @@ vk.set('i', '<esc>', function()
   end
 end, opts)
 
+vk.set('i', '<A-w>', '<C-\\><C-n><cmd>w<CR>', { silent = true })
 -- NOTE: Normal mode keymap
 
 vk.set('n', '<esc>', function()
@@ -445,24 +500,47 @@ vk.set('n', '<a-->', '<C-w>-')
 -- tabs
 vk.set('n', '<leader><tab>', ':tabnext<CR>', { desc = 'Next tab' })
 
--- open terminal
-vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[N]ew [T]erminal tile' })
+-- my old open terminal command
+-- vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[N]ew [T]erminal tile' })
 
 vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", { desc = 'generate comments' })
 
 -- Quick save
 vk.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
 
--- Using ufo provider need remap `zR` and `zM`. If Neovim is 0.6.1, remap yourself
+require('ufo').setup()
+
 -- folds
-vk.set('n', 'zR', require('ufo').openAllFolds, { desc = '[R]emove folds' })
-vk.set('n', 'zM', require('ufo').closeAllFolds, { desc = '[M]ass close folds' })
+vk.set('n', 'zt', 'za', { desc = '[T]oggle fold under cursor' })
+vk.set('n', 'zat', 'zA', { desc = '[A]ll [T]oggle fold under cursor' })
+vk.set('n', 'zao', require('ufo').openAllFolds, { desc = '[A]ll [O]pen' })
+vk.set('n', 'zac', require('ufo').closeAllFolds, { desc = '[A]ll [C]lose' })
+vk.set('n', 'zad', 'zD', { desc = '[A]ll [D]elete under cursor' })
+-- vk.set('n', 'zac', 'zC', { desc = '[A]ll [C]lose under cursor' })
+-- vk.set('n', 'zao', 'zO', { desc = '[A]ll [O]pen under cursor' })
+vk.set('n', 'zaf', 'zE', { desc = 'delete [A]ll folds in a [F]ile' })
+
+vk.set('n', 'zAA', function() end, { desc = '' })
+vk.set('n', 'zLL', function() end, { desc = '' })
+vk.set('n', 'zss', function() end, { desc = '' })
+vk.set('n', 'zee', function() end, { desc = '' })
+vk.set('n', 'zgg', function() end, { desc = '' })
+vk.set('n', 'zMM', function() end, { desc = '' })
+vk.set('n', 'zHH', function() end, { desc = '' })
+vk.set('n', 'zvv', function() end, { desc = '' })
+vk.set('n', 'zww', function() end, { desc = '' })
+vk.set('n', 'zbb', function() end, { desc = '' })
+vk.set('n', 'zDD', function() end, { desc = '' })
+vk.set('n', 'zCC', function() end, { desc = '' })
+vk.set('n', 'zEE', function() end, { desc = '' })
+vk.set('n', 'zRR', function() end, { desc = '' })
+vk.set('n', 'zOO', function() end, { desc = '' })
+vk.set('n', 'z<CR><CR>', function() end, { desc = '' })
 
 -- Jump to previous locations
--- vk.set('n', 'gh', '<C-i>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Next Location' })
--- vk.set('n', 'gt', '<C-o>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Previous Location' })
-vk.set('n', 'gh', ':USE C-i<CR>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Next Location' })
-vk.set('n', 'gt', ':USE C-o<CR>', { noremap = true, silent = true, desc = 'LSP+ [G]oto Previous Location' })
+-- my right ctrl is in akward position on my laptop
+vk.set('n', '<C-d>', '<C-o>')
+vk.set('n', '<C-n>', '<C-i>')
 
 -- Navigation rebind
 vk.set('n', 'k', 't', opts)
@@ -572,6 +650,10 @@ dir_config.setup_directory_config('LOVE', function()
   vk.set('n', '<leader>nr', '<cmd>w<cr><cmd>LoveRun<cr>', { desc = 'Run LÖVE' })
   vk.set('n', '<leader>ns', '<cmd>LoveStop<cr>', { desc = 'Stop LÖVE' })
 end)
+-- For quick board
+dir_config.setup_directory_config('quick-board', function()
+  vk.set('n', '<leader>nt', ':w<cr>:tabnew<cr>:term<cr>ar<cr><C-\\><C-n>:q<cr>', { desc = 'Run quick board' })
+end)
 
 -- NOTE: Tab settings
 vim.opt.expandtab = true
@@ -609,58 +691,39 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.opt.shiftwidth = 2
   end,
 })
--- Autocmd for terminal
-vim.api.nvim_create_autocmd('TermOpen', {
-  pattern = '*',
-  callback = function()
-    vim.cmd 'startinsert'
-  end,
-})
-vim.api.nvim_create_autocmd('TermClose', {
-  pattern = '*',
-  callback = function()
-    vim.cmd 'wqa'
-  end,
-})
+-- -- Autocmd for terminal
+-- vim.api.nvim_create_autocmd('TermOpen', {
+--   pattern = '*',
+--   callback = function()
+--     vim.cmd 'startinsert'
+--   end,
+-- })
+-- vim.api.nvim_create_autocmd('TermClose', {
+--   pattern = '*',
+--   callback = function()
+--     vim.cmd 'wqa'
+--   end,
+-- })
+-- vim.api.nvim_create_autocmd('VimLeavePre', {
+--   pattern = '*',
+--   callback = function()
+--     vim.cmd 'wqa!'
+--   end,
+-- })
 
--- NOTE: Delete Shada On Quit
-vim.api.nvim_create_autocmd('ExitPre', {
-  pattern = '*',
-  callback = function()
-    local str = '<CR>del main.shada.tmp.'
-    local keys = vim.api.nvim_replace_termcodes(
-      ':term<CR>C:<CR>cd "C:\\Users\\User1\\AppData\\Local\\nvim-data\\shada"'
-        .. str
-        .. 'z'
-        .. str
-        .. 'x'
-        .. str
-        .. 'y'
-        .. str
-        .. 'w'
-        .. str
-        .. 'v'
-        .. str
-        .. 'u'
-        .. str
-        .. 't'
-        .. str
-        .. 's'
-        .. str
-        .. 'r'
-        .. str
-        .. 'q'
-        .. '<CR>',
-      true,
-      false,
-      true
-    )
-    vim.api.nvim_feedkeys(keys, 'm', false)
-  end,
-})
+delete_shada = function()
+  local keys = vim.api.nvim_replace_termcodes(
+    ':term<CR>aC:<CR>cd "C:\\Users\\User1\\AppData\\Local\\nvim-data"<CR>del shada<CR>Y<CR><C-\\><C-n><leader>h<CR>',
+    true,
+    false,
+    true
+  )
+  vim.api.nvim_feedkeys(keys, 'm', false)
+end
+
+vk.set('n', 'ds', delete_shada, { desc = 'Open terminal' })
 
 vim.g.editorconfig = false
-
 --color scheme by default
 vim.cmd 'colorscheme miasma'
 vim.opt.guicursor = 'n-v-c:block,i:ver10'
@@ -671,12 +734,10 @@ pcall(function()
 end)
 vim.cmd 'cd'
 
-vk.set('n', '<leader>tt', function()
+vk.set('n', '<leader>te', function()
   local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
   vim.cmd('' .. pwd)
-end, { desc = '[T]oggle [T]ree', noremap = true, silent = true })
-
-require('ufo').setup()
+end, { desc = '[T]oggle [E]xplorer', noremap = true, silent = true })
 
 vim.g.autoformat = false
 
@@ -689,6 +750,11 @@ vim.o.foldenable = true
 vim.o.title = true
 
 vim.o.titlestring = [[%t – %F]]
+
+vim.api.nvim_set_hl(0, 'LspReferenceText', { undercurl = false, fg = '#d7c483', bg = '#43492a', sp = '#fd9720' })
+vim.api.nvim_set_hl(0, 'LspReferenceRead', { undercurl = false, fg = '#d7c483', bg = '#43492a', sp = '#fd9720' })
+vim.api.nvim_set_hl(0, 'LspReferenceWrite', { undercurl = false, fg = '#d7c483', bg = '#43492a', sp = '#fd9720' })
+-- LspReferenceText xxx gui=bold,undercurl guifg=#d7c483 guibg=#43492a guisp=#fd9720
 
 -- NOTE: Comment setup
 local ft = require 'Comment.ft'

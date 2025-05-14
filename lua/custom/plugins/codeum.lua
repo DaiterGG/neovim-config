@@ -21,9 +21,10 @@ return {
       return vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
     end, { expr = true, silent = true })
 
-    vim.keymap.set('i', '<C-m>', function()
-      return vim.fn['codeium#CycleOrComplete']()
-    end, { expr = true, silent = true })
+    -- vim.keymap.set('i', '<C-m>', function()
+    -- return vim.fn['codeium#CycleOrComplete']()
+    -- return vim.fn['codeium#CycleCompletions'](1)
+    -- end, { expr = false })
 
     vim.keymap.set('i', '<C-w>', function()
       return vim.fn['codeium#CycleCompletions'](-1)

@@ -44,7 +44,7 @@ return {
         vim.keymap.set('n', leader .. '<', api.node.navigate.sibling.prev, opts 'Previous Sibling')
         vim.keymap.set('n', leader .. '.', api.node.run.cmd, opts 'Run Command')
         vim.keymap.set('n', leader .. 'b', api.tree.change_root_to_parent, opts '2. CD ..')
-        vim.keymap.set('n', leader .. 'c', api.fs.create, opts 'Create File Or Directory')
+        vim.keymap.set('n', leader .. 'c', api.fs.create, opts '2. Create File Or Directory')
         -- vim.keymap.set('n', leader .. 'bd', api.marks.bulk.delete, opts 'Delete Bookmarked')
         -- vim.keymap.set('n', leader .. 'bt', api.marks.bulk.trash, opts 'Trash Bookmarked')
         -- vim.keymap.set('n', leader .. 'bmv', api.marks.bulk.move, opts 'Move Bookmarked')
