@@ -54,6 +54,14 @@ return {
 
         -- Find references for the word under your cursor.
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+        vim.keymap.set('n', 'gra', function() end)
+        vim.keymap.set('n', 'gri', function() end)
+        vim.keymap.set('n', 'grr', function() end)
+        vim.keymap.set('n', 'grn', function() end)
+        vim.keymap.del('n', 'gra')
+        vim.keymap.del('n', 'gri')
+        vim.keymap.del('n', 'grr')
+        vim.keymap.del('n', 'grn')
 
         -- Jump to the implementation of the word under your cursor.
         --  Useful when your language has ways of declaring types without an actual implementation.
@@ -62,11 +70,11 @@ return {
         -- Jump to the type of the word under your cursor.
         --  Useful when you're not sure what type a variable is and you want to see
         --  the definition of its *type*, not where it was *defined*.
-        map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
+        map('gt', require('telescope.builtin').lsp_type_definitions, '[T]ype definition')
 
         -- Fuzzy find all the symbols in your current document.
         --  Symbols are things like variables, functions, types, etc.
-        map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+        -- map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
 
         -- Fuzzy find all the symbols in your current workspace.
         --  Similar to document symbols, except searches over your entire project.
@@ -163,6 +171,9 @@ return {
       -- xmlformatter = {
       --   filetypes = { 'xml' },
       -- },
+      codelldb = {
+        filetypes = { 'rs' },
+      },
       omnisharp = {
         filetypes = { 'cs' },
       },

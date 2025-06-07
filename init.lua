@@ -369,7 +369,7 @@ require('lazy').setup({
             "     set undofile
             " endif
         ]]
-      vk.set('n', '<leader>tu', vim.cmd.UndotreeToggle, { desc = '[T]oggle [U]ndotree' })
+      vk.set('n', '<leader>tl', vim.cmd.UndotreeToggle, { desc = '[T]oggle [Undo] tree' })
     end,
   },
 
@@ -393,7 +393,7 @@ require('lazy').setup({
     'akinsho/toggleterm.nvim',
     version = '*',
     opts = {
-      size = 120,
+      size = 200,
       open_mapping = [[<leader>tt]],
       hide_numbers = false,
       autochdir = true,
@@ -403,6 +403,79 @@ require('lazy').setup({
       terminal_mappings = true, -- whether or not the open mapping applies in the opened terminals
       direction = 'vertical',
     },
+  },
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^6', -- Recommended
+    lazy = false, -- This plugin is already lazy
+
+    -- debugger setup
+    config = function()
+      local mason_reg = require 'mason-registry'
+      local codelldb = mason_reg.get_package 'codelldb'
+      local extension_path = codelldb:get_install_path() .. '/extension/'
+      local codelldb_path = extension_path .. 'adapter/codelldb'
+      local liblldb_path = extension_path .. 'lldb/lib/liblldb.dylib'
+      local cfg = require 'rustaceanvim.config'
+
+      -- vim.g.rustaceanvim = {
+      --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path) },
+      -- }
+      -- vim.g.rustaceanvim = {
+      --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path) },
+      -- }
+    end,
+  },
+  -- debugger setup
+  {
+    'mfussenegger/nvim-dap',
+    config = function()
+      local dap, dapui = require 'dap', require 'dapui'
+
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
+
+      -- add yours here
+
+      local map = vim.keymap.set
+
+      -- map('i', 'jk', '<ESC>')
+
+      -- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
+
+      -- Nvim DAP
+      map('n', '<Leader>di', "<cmd>lua require'dap'.step_into()<CR>", { desc = 'Debugger step into' })
+      map('n', '<Leader>dv', "<cmd>lua require'dap'.step_over()<CR>", { desc = 'Debugger step over' })
+      map('n', '<Leader>du', "<cmd>lua require'dap'.step_out()<CR>", { desc = 'Debugger step out' })
+      map('n', '<Leader>dc', "<cmd>lua require'dap'.continue()<CR>", { desc = 'Debugger continue' })
+      map('n', '<Leader>db', "<cmd>lua require'dap'.toggle_breakpoint()<CR>", { desc = 'Debugger toggle breakpoint' })
+      map(
+        'n',
+        '<Leader>dd',
+        "<cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>",
+        { desc = 'Debugger set conditional breakpoint' }
+      )
+      map('n', '<Leader>dq', "<cmd>lua require'dap'.terminate()<CR>", { desc = 'Debugger reset' })
+      map('n', '<Leader>dl', "<cmd>lua require'dap'.run_last()<CR>", { desc = 'Debugger run last' })
+    end,
+  },
+
+  {
+    'rcarriga/nvim-dap-ui',
+    dependencies = { 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio' },
+    config = function()
+      require('dapui').setup()
+    end,
   },
   -- { 'neoclide/coc.nvim', branch = 'release' },
   -- New plugins go here
@@ -436,8 +509,15 @@ require('lazy').setup({
 local c_c = vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
 
 -- NOTE: Command mode keymap
-vk.set('c', '<C-h>', require('cmp').mapping.select_next_item(), opts)
-vk.set('c', '<C-t>', require('cmp').mapping.select_prev_item(), opts)
+local cmp = require 'cmp'
+local wrap1 = function()
+  cmp.select_next_item()
+end
+local wrap2 = function()
+  cmp.select_prev_item()
+end
+vk.set('c', '<C-h>', wrap1, opts)
+vk.set('c', '<C-t>', wrap2, opts)
 vk.set('c', '<C-n>', '<C-t><C-h>', { remap = true })
 
 vk.set('c', '<c-e>', '<left>', { noremap = false })
@@ -456,8 +536,8 @@ vk.set('t', '<A-e>', '<C-\\><C-n><C-w>h', { remap = true })
 vk.set('t', '<A-u>', '<C-\\><C-n><C-w>l', { remap = true })
 vk.set('t', '<A-h>', '<C-\\><C-n><C-w>j', { remap = true })
 vk.set('t', '<A-t>', '<C-\\><C-n><C-w>k', { remap = true })
-vk.set('t', '<A-.>', '<C-\\><C-n><C-w>>a', { remap = true })
-vk.set('t', '<A-,>', '<C-\\><C-n><C-w><lt>a', { remap = true })
+vk.set('t', '<A-,>', '<C-\\><C-n><C-w>>a', { remap = true })
+vk.set('t', '<A-.>', '<C-\\><C-n><C-w><lt>a', { remap = true })
 vk.set('t', '<A-+>', '<C-\\><C-n><C-w>+a', { remap = true })
 vk.set('t', '<A-->', '<C-\\><C-n><C-w>-a', { remap = true })
 
@@ -492,8 +572,8 @@ vk.set('n', '<a-e>', '<C-w>h')
 vk.set('n', '<a-u>', '<C-w>l')
 vk.set('n', '<a-h>', '<C-w>j')
 vk.set('n', '<a-t>', '<C-w>k')
-vk.set('n', '<a-.>', '<C-w>>', opts)
-vk.set('n', '<a-,>', '<C-w><lt>', opts)
+vk.set('n', '<a-,>', '<C-w>>', opts)
+vk.set('n', '<a-.>', '<C-w><lt>', opts)
 vk.set('n', '<a-+>', '<C-w>+')
 vk.set('n', '<a-->', '<C-w>-')
 
@@ -561,8 +641,8 @@ vk.set('n', '<C-h>', '11gj', opts)
 vk.set('n', '<C-t>', '11gk', opts)
 
 -- MoveLine
-vk.set('n', 'H', ':m .+1<CR>==', opts)
-vk.set('n', 'T', ':m .-2<CR>==', opts)
+-- vk.set('n', 'H', ':m .+1<CR>==', opts)
+-- vk.set('n', 'T', ':m .-2<CR>==', opts)
 
 -- NOTE: Formating stuff
 local toggle_format = true
@@ -584,6 +664,10 @@ vk.set('n', '<leader>f', function()
   require('conform').format { async = true, lsp_format = 'fallback' }
 end, { noremap = true, silent = true, desc = '[F]ormat Document' })
 
+-- toggle virtual text
+vk.set('n', '<leader>td', function()
+  vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
+end, { noremap = true, silent = true, desc = '[T]oggle [D]iagnostics virtual text' })
 -- NOTE: Visual mode keymap
 
 vk.set('v', 'k', 't', opts)
@@ -606,8 +690,9 @@ vk.set('v', '<C-t>', '11gk', opts)
 vk.set('v', '$', '$h', opts)
 
 -- MoveLine
-vk.set('v', 'H', ":m '>+1<CR>gv=gv", opts)
-vk.set('v', 'T', ":m '<-2<CR>gv=gv", opts)
+-- now in mini.move
+-- vk.set('v', 'H', ":m '>+1<CR>gv=gv", opts)
+-- vk.set('v', 'T', ":m '<-2<CR>gv=gv", opts)
 
 --Paste over
 vk.set('v', 'p', 'P', opts)
@@ -652,7 +737,7 @@ dir_config.setup_directory_config('LOVE', function()
 end)
 -- For quick board
 dir_config.setup_directory_config('quick-board', function()
-  vk.set('n', '<leader>nt', ':w<cr>:tabnew<cr>:term<cr>ar<cr><C-\\><C-n>:q<cr>', { desc = 'Run quick board' })
+  --
 end)
 
 -- NOTE: Tab settings
@@ -691,19 +776,6 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.opt.shiftwidth = 2
   end,
 })
--- -- Autocmd for terminal
--- vim.api.nvim_create_autocmd('TermOpen', {
---   pattern = '*',
---   callback = function()
---     vim.cmd 'startinsert'
---   end,
--- })
--- vim.api.nvim_create_autocmd('TermClose', {
---   pattern = '*',
---   callback = function()
---     vim.cmd 'wqa'
---   end,
--- })
 -- vim.api.nvim_create_autocmd('VimLeavePre', {
 --   pattern = '*',
 --   callback = function()
@@ -711,7 +783,7 @@ vim.api.nvim_create_autocmd('FileType', {
 --   end,
 -- })
 
-delete_shada = function()
+local delete_shada = function()
   local keys = vim.api.nvim_replace_termcodes(
     ':term<CR>aC:<CR>cd "C:\\Users\\User1\\AppData\\Local\\nvim-data"<CR>del shada<CR>Y<CR><C-\\><C-n><leader>h<CR>',
     true,
@@ -771,3 +843,4 @@ local ft = require 'Comment.ft'
 -- 3. Multiple filetypes
 ft({ 'conf', 'frag', 'shader', 'glsl', 'vert', 'txt' }, { '//%s', '/*%s*/' })
 -- ft({ 'toml', 'graphql' }, '#%s')
+vim.diagnostic.config { virtual_text = true }
