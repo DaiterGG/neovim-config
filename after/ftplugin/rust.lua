@@ -35,30 +35,12 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set('n', '<leader>cr', function()
       vim.cmd.RustLsp { 'renderDiagnostic' }
     end, { silent = true, buffer = bufnr, desc = '[R]ender current diagnostics [Rust]' })
-    vim.keymap.set('n', '<leader>nq', ':w<cr>:tabnew<cr>:term<cr>ar<cr><C-\\><C-n>:q<cr>', { desc = 'run quick board without terminal' })
-    vim.keymap.set(
-      'n',
-      '<leader>nc',
-      '<C-\\><C-n>:ToggleTerm<cr><C-w>h<C-w>o:w<cr>:ToggleTerm<cr>a<cr>a<cr>cargo build<cr><C-\\><C-n>',
-      { desc = 'compile quick board' }
-    )
-    vim.keymap.set(
-      'n',
-      '<leader>nr',
-      '<C-\\><C-n>:ToggleTerm<cr><C-w>h<C-w>o:w<cr>:ToggleTerm<cr>a<cr>a<cr>cargo run<cr><C-\\><C-n>',
-      { desc = 'run quick board' }
-    )
-    vim.keymap.set(
-      'n',
-      '<leader>nt',
-      '<C-\\><C-n>:ToggleTerm<cr><C-w>h<C-w>o:w<cr>:ToggleTerm<cr>a<cr>a<cr>cargo test<cr><C-\\><C-n>',
-      { desc = 'test quick board' }
-    )
-    vim.keymap.set(
-      'n',
-      '<leader>nb',
-      '<C-\\><C-n>:ToggleTerm<cr><C-w>h<C-w>o:w<cr>:ToggleTerm<cr>a<cr>a<cr>cargo bench<cr><C-\\><C-n>',
-      { desc = 'bench quick board' }
-    )
+    vim.keymap.set('n', '<leader>nq', ':w<cr>:tabnew<cr>:term<cr>ar<cr><C-\\><C-n>:q<cr>', { desc = 'rust run headless without terminal' })
+
+    local open_if_not = '<C-\\><C-n><C-w>h<C-w>o:w<cr>:ToggleTerm<cr>a<cr>'
+    vim.keymap.set('n', '<leader>nc', open_if_not .. 'cargo build<cr><C-\\><C-n>', { desc = 'rust compile' })
+    vim.keymap.set('n', '<leader>nr', open_if_not .. 'cargo run<cr><C-\\><C-n>', { desc = 'rust run' })
+    vim.keymap.set('n', '<leader>nt', open_if_not .. 'cargo test<cr><C-\\><C-n>', { desc = 'rust test' })
+    vim.keymap.set('n', '<leader>nb', open_if_not .. 'cargo bench<cr><C-\\><C-n>', { desc = 'rust bench' })
   end,
 })

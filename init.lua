@@ -520,8 +520,10 @@ vk.set('c', '<C-h>', wrap1, opts)
 vk.set('c', '<C-t>', wrap2, opts)
 vk.set('c', '<C-n>', '<C-t><C-h>', { remap = true })
 
-vk.set('c', '<c-e>', '<left>', { noremap = false })
-vk.set('c', '<c-u>', '<right>', { noremap = false })
+vk.set('c', '<A-h>', '<down>', { noremap = false })
+vk.set('c', '<A-t>', '<up>', { noremap = false })
+vk.set('c', '<A-e>', '<left>', { noremap = false })
+vk.set('c', '<A-u>', '<right>', { noremap = false })
 
 -- NOTE: Terminal mode keymap
 vk.set('t', '<Esc>', '<C-\\><C-n>', opts)
@@ -699,7 +701,7 @@ vk.set('v', 'p', 'P', opts)
 vk.set('v', 'P', 'p', opts)
 
 --Replace
-vk.set('v', '<C-r>', 'y:%s/<C-r>"/<C-r>"/gc<Left><Left><Left>', { desc = 'Replace' })
+vk.set('v', '<C-r>', '"1y:%s/<C-r>1/<C-r>1/gc<Left><Left><Left>', { desc = 'Replace' })
 
 -- vk.set('v', '<C-_>', 'y/<C-r>"<CR>', { remap = true })
 
@@ -711,10 +713,10 @@ vk.set('v', '<C-r>', 'y:%s/<C-r>"/<C-r>"/gc<Left><Left><Left>', { desc = 'Replac
 -- require('nvim-treesitter.install').compilers = { 'cc', 'gcc', 'cl', 'zig' }
 -- require('nvim-treesitter.install').prefer_git = false
 
--- NOTE: Register configurations for different directories
+-- NOTE: Directory specific configuration
 local dir_config = require 'autodir'
 
--- Noita run
+--for Noita
 dir_config.setup_directory_config('Noita', function()
   vk.set(
     'n',
@@ -735,6 +737,7 @@ dir_config.setup_directory_config('LOVE', function()
   vk.set('n', '<leader>nr', '<cmd>w<cr><cmd>LoveRun<cr>', { desc = 'Run LÖVE' })
   vk.set('n', '<leader>ns', '<cmd>LoveStop<cr>', { desc = 'Stop LÖVE' })
 end)
+
 -- For quick board
 dir_config.setup_directory_config('quick-board', function()
   --
@@ -800,12 +803,6 @@ vim.g.editorconfig = false
 vim.cmd 'colorscheme miasma'
 vim.opt.guicursor = 'n-v-c:block,i:ver10'
 
--- NOTE: set current directory on startup
-pcall(function()
-  vim.cmd 'cd %:h'
-end)
-vim.cmd 'cd'
-
 vk.set('n', '<leader>te', function()
   local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
   vim.cmd('' .. pwd)
@@ -844,3 +841,9 @@ local ft = require 'Comment.ft'
 ft({ 'conf', 'frag', 'shader', 'glsl', 'vert', 'txt' }, { '//%s', '/*%s*/' })
 -- ft({ 'toml', 'graphql' }, '#%s')
 vim.diagnostic.config { virtual_text = true }
+
+-- NOTE: set current directory on startup
+pcall(function()
+  vim.cmd 'cd %:h'
+end)
+vim.cmd 'cd'

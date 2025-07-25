@@ -192,6 +192,9 @@ return {
       html = {
         filetypes = { 'html' },
       },
+      fixjson = {
+        filetypes = { 'json' },
+      },
       -- clangd = {},
       -- gopls = {},
       -- pyright = {},

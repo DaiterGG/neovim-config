@@ -1,3 +1,12 @@
+-- this is my 'project specific configuration' plugin
+-- usage:
+-- for cd C:/Programs/FolderName/subfolder/
+-- init.lua:
+--   local dir_config = require 'autodir'
+--   dir_config.setup_directory_config('FolderName', function()
+--     ...
+--   }
+
 local M = {}
 -- Table to store directory configurations
 local directory_configs = {}

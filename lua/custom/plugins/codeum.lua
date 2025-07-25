@@ -21,6 +21,7 @@ return {
       return vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
     end, { expr = true, silent = true })
 
+    vim.keymap.set('n', '<leader>tc', ':CodeiumToggle<cr>', { silent = true, desc = '[T]oggle [C]odeium' })
     -- vim.keymap.set('i', '<C-m>', function()
     -- return vim.fn['codeium#CycleOrComplete']()
     -- return vim.fn['codeium#CycleCompletions'](1)
