@@ -1,5 +1,6 @@
 return {
   'jake-stewart/multicursor.nvim',
+  event = 'BufReadPost',
   branch = '1.0',
   config = function()
     local mc = require 'multicursor-nvim'
@@ -7,6 +8,14 @@ return {
     mc.setup()
 
     local set = vim.keymap.set
+
+    local c_c = vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
+
+    vim.keymap.set('n', '<esc>', function()
+      vim.cmd 'nohlsearch'
+      vim.api.nvim_feedkeys(c_c, 'm', false)
+      mc.clearCursors()
+    end, opts)
 
     -- Add or skip cursor above/below the main cursor.
     set({ 'n', 'x' }, '<A-v>', function()

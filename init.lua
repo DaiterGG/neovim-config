@@ -1,7 +1,7 @@
 -- neovim-tree requires this
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
-
+vim.opt.swapfile = false
 -- Set <space> as the leader key
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
@@ -258,13 +258,22 @@ require('lazy').setup({
   --     { 'nvim-telescope/telescope-fzy-native.nvim' },
   --   },
   -- },
-  'smartpde/telescope-recent-files',
+  {
+    'smartpde/telescope-recent-files',
+    event = 'VeryLazy',
+  },
 
   --FOLD UFO
   {
     'kevinhwang91/nvim-ufo',
-  },
+    event = 'BufReadPost',
+    config = function()
+      require('ufo').setup()
 
+      vk.set('n', 'zao', require('ufo').openAllFolds, { desc = '[A]ll [O]pen' })
+      vk.set('n', 'zac', require('ufo').closeAllFolds, { desc = '[A]ll [C]lose' })
+    end,
+  },
   {
     'kevinhwang91/promise-async',
   },
@@ -345,8 +354,7 @@ require('lazy').setup({
   --toggleable undotree
   {
     'mbbill/undotree',
-    lazy = false,
-    cmd = 'UndotreeToggle',
+    event = 'BufReadPost',
     config = function()
       vim.cmd [[
         let g:undotree_WindowLayout=1
@@ -385,12 +393,17 @@ require('lazy').setup({
   -- generate annotations
   {
     'danymat/neogen',
-    config = true,
+    event = 'BufReadPost',
+    config = function()
+      vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", { desc = 'generate comments' })
+    end,
+
     -- Uncomment next line if you want to follow only stable versions
     -- version = "*"
   },
   {
     'akinsho/toggleterm.nvim',
+    event = 'BufReadPost',
     version = '*',
     opts = {
       size = 200,
@@ -399,7 +412,7 @@ require('lazy').setup({
       autochdir = true,
       persistent_size = false,
       start_in_insert = true,
-      insert_mappings = true, -- whether or not the open mapping applies in insert mode
+      insert_mappings = false,  -- whether or not the open mapping applies in insert mode
       terminal_mappings = true, -- whether or not the open mapping applies in the opened terminals
       direction = 'vertical',
     },
@@ -407,7 +420,7 @@ require('lazy').setup({
   {
     'mrcjkb/rustaceanvim',
     version = '^6', -- Recommended
-    lazy = false, -- This plugin is already lazy
+    lazy = false,   -- This plugin is already lazy
 
     -- debugger setup
     config = function()
@@ -426,58 +439,62 @@ require('lazy').setup({
       -- }
     end,
   },
-  -- debugger setup
-  {
-    'mfussenegger/nvim-dap',
-    config = function()
-      local dap, dapui = require 'dap', require 'dapui'
+  -- NOTE: debugger setup (there is a default config in kickstarter
+  -- {
+  --   event = 'BufReadPost',
+  --   'mfussenegger/nvim-dap',
+  --   config = function()
+  --     local dap, dapui = require 'dap', require 'dapui'
 
-      dap.listeners.before.attach.dapui_config = function()
-        dapui.open()
-      end
-      dap.listeners.before.launch.dapui_config = function()
-        dapui.open()
-      end
-      dap.listeners.before.event_terminated.dapui_config = function()
-        dapui.close()
-      end
-      dap.listeners.before.event_exited.dapui_config = function()
-        dapui.close()
-      end
+  --     dap.listeners.before.attach.dapui_config = function()
+  --       dapui.open()
+  --     end
+  --     dap.listeners.before.launch.dapui_config = function()
+  --       dapui.open()
+  --     end
+  --     dap.listeners.before.event_terminated.dapui_config = function()
+  --       dapui.close()
+  --     end
+  --     dap.listeners.before.event_exited.dapui_config = function()
+  --       dapui.close()
+  --     end
 
-      -- add yours here
+  --     -- add yours here
 
-      local map = vim.keymap.set
+  --     local map = vim.keymap.set
 
-      -- map('i', 'jk', '<ESC>')
+  --     -- map('i', 'jk', '<ESC>')
 
-      -- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
+  --     -- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
 
-      -- Nvim DAP
-      map('n', '<Leader>di', "<cmd>lua require'dap'.step_into()<CR>", { desc = 'Debugger step into' })
-      map('n', '<Leader>dv', "<cmd>lua require'dap'.step_over()<CR>", { desc = 'Debugger step over' })
-      map('n', '<Leader>du', "<cmd>lua require'dap'.step_out()<CR>", { desc = 'Debugger step out' })
-      map('n', '<Leader>dc', "<cmd>lua require'dap'.continue()<CR>", { desc = 'Debugger continue' })
-      map('n', '<Leader>db', "<cmd>lua require'dap'.toggle_breakpoint()<CR>", { desc = 'Debugger toggle breakpoint' })
-      map(
-        'n',
-        '<Leader>dd',
-        "<cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>",
-        { desc = 'Debugger set conditional breakpoint' }
-      )
-      map('n', '<Leader>dq', "<cmd>lua require'dap'.terminate()<CR>", { desc = 'Debugger reset' })
-      map('n', '<Leader>dl', "<cmd>lua require'dap'.run_last()<CR>", { desc = 'Debugger run last' })
-    end,
-  },
+  --     -- Nvim DAP
+  --     map('n', '<Leader>di', "<cmd>lua require'dap'.step_into()<CR>", { desc = 'Debugger step into' })
+  --     map('n', '<Leader>dv', "<cmd>lua require'dap'.step_over()<CR>", { desc = 'Debugger step over' })
+  --     map('n', '<Leader>du', "<cmd>lua require'dap'.step_out()<CR>", { desc = 'Debugger step out' })
+  --     map('n', '<Leader>dc', "<cmd>lua require'dap'.continue()<CR>", { desc = 'Debugger continue' })
+  --     map('n', '<Leader>db', "<cmd>lua require'dap'.toggle_breakpoint()<CR>", { desc = 'Debugger toggle breakpoint' })
+  --     map(
+  --       'n',
+  --       '<Leader>dd',
+  --       "<cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>",
+  --       { desc = 'Debugger set conditional breakpoint' }
+  --     )
+  --     map('n', '<Leader>dq', "<cmd>lua require'dap'.terminate()<CR>", { desc = 'Debugger reset' })
+  --     map('n', '<Leader>dl', "<cmd>lua require'dap'.run_last()<CR>", { desc = 'Debugger run last' })
+  --   end,
+  -- },
+  --
+  -- {
+  --   'rcarriga/nvim-dap-ui',
+  --   event = 'BufReadPost',
+  --   dependencies = { 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio' },
+  --   config = function()
+  --     require('dapui').setup()
+  --   end,
+  -- },
 
-  {
-    'rcarriga/nvim-dap-ui',
-    dependencies = { 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio' },
-    config = function()
-      require('dapui').setup()
-    end,
-  },
   -- { 'neoclide/coc.nvim', branch = 'release' },
+
   -- New plugins go here
   --
   --
@@ -505,8 +522,6 @@ require('lazy').setup({
     },
   },
 })
-
-local c_c = vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
 
 -- NOTE: Command mode keymap
 local cmp = require 'cmp'
@@ -546,23 +561,9 @@ vk.set('t', '<A-->', '<C-\\><C-n><C-w>-a', { remap = true })
 -- NOTE: Insert mode keymap
 vk.set('i', '<C-p>', '<C-r>"', opts)
 
-vk.set('i', '<esc>', function()
-  vim.api.nvim_feedkeys(c_c, 'm', false)
-  local tl = require 'telescope'
-  if tl.active then
-    tl.actions.close()
-  end
-end, opts)
 
 vk.set('i', '<A-w>', '<C-\\><C-n><cmd>w<CR>', { silent = true })
 -- NOTE: Normal mode keymap
-
-vk.set('n', '<esc>', function()
-  vim.cmd 'nohlsearch'
-  vim.api.nvim_feedkeys(c_c, 'm', false)
-  local mc = require 'multicursor-nvim'
-  mc.clearCursors()
-end, opts)
 
 vk.set('n', '<CR>', 'A<CR><Esc>', opts)
 
@@ -585,39 +586,36 @@ vk.set('n', '<leader><tab>', ':tabnext<CR>', { desc = 'Next tab' })
 -- my old open terminal command
 -- vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[N]ew [T]erminal tile' })
 
-vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", { desc = 'generate comments' })
-
 -- Quick save
 vk.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
-
-require('ufo').setup()
 
 -- folds
 vk.set('n', 'zt', 'za', { desc = '[T]oggle fold under cursor' })
 vk.set('n', 'zat', 'zA', { desc = '[A]ll [T]oggle fold under cursor' })
-vk.set('n', 'zao', require('ufo').openAllFolds, { desc = '[A]ll [O]pen' })
-vk.set('n', 'zac', require('ufo').closeAllFolds, { desc = '[A]ll [C]lose' })
-vk.set('n', 'zad', 'zD', { desc = '[A]ll [D]elete under cursor' })
+
 -- vk.set('n', 'zac', 'zC', { desc = '[A]ll [C]lose under cursor' })
 -- vk.set('n', 'zao', 'zO', { desc = '[A]ll [O]pen under cursor' })
+
+vk.set('n', 'zad', 'zD', { desc = '[A]ll [D]elete under cursor' })
 vk.set('n', 'zaf', 'zE', { desc = 'delete [A]ll folds in a [F]ile' })
 
-vk.set('n', 'zAA', function() end, { desc = '' })
-vk.set('n', 'zLL', function() end, { desc = '' })
-vk.set('n', 'zss', function() end, { desc = '' })
-vk.set('n', 'zee', function() end, { desc = '' })
-vk.set('n', 'zgg', function() end, { desc = '' })
-vk.set('n', 'zMM', function() end, { desc = '' })
-vk.set('n', 'zHH', function() end, { desc = '' })
-vk.set('n', 'zvv', function() end, { desc = '' })
-vk.set('n', 'zww', function() end, { desc = '' })
-vk.set('n', 'zbb', function() end, { desc = '' })
-vk.set('n', 'zDD', function() end, { desc = '' })
-vk.set('n', 'zCC', function() end, { desc = '' })
-vk.set('n', 'zEE', function() end, { desc = '' })
-vk.set('n', 'zRR', function() end, { desc = '' })
-vk.set('n', 'zOO', function() end, { desc = '' })
-vk.set('n', 'z<CR><CR>', function() end, { desc = '' })
+-- vk.del('n', 'zAA')
+-- vk.set('n', 'zAA', function() end, { desc = '' })
+-- vk.set('n', 'zLL', function() end, { desc = '' })
+-- vk.set('n', 'zss', function() end, { desc = '' })
+-- vk.set('n', 'zee', function() end, { desc = '' })
+-- vk.set('n', 'zgg', function() end, { desc = '' })
+-- vk.set('n', 'zMM', function() end, { desc = '' })
+-- vk.set('n', 'zHH', function() end, { desc = '' })
+-- vk.set('n', 'zvv', function() end, { desc = '' })
+-- vk.set('n', 'zww', function() end, { desc = '' })
+-- vk.set('n', 'zbb', function() end, { desc = '' })
+-- vk.set('n', 'zDD', function() end, { desc = '' })
+-- vk.set('n', 'zCC', function() end, { desc = '' })
+-- vk.set('n', 'zEE', function() end, { desc = '' })
+-- vk.set('n', 'zRR', function() end, { desc = '' })
+-- vk.set('n', 'zOO', function() end, { desc = '' })
+-- vk.set('n', 'z<CR><CR>', function() end, { desc = '' })
 
 -- Jump to previous locations
 -- my right ctrl is in akward position on my laptop
@@ -630,9 +628,9 @@ vk.set('n', 't', 'gk', opts) -- up
 
 vk.set('n', 'h', 'gj', opts) -- down
 vk.set('n', 'j', 'e', opts)
-vk.set('n', 'e', 'h', opts) -- left
+vk.set('n', 'e', 'h', opts)  -- left
 
-vk.set('n', 'u', 'l', opts) -- right
+vk.set('n', 'u', 'l', opts)  -- right
 vk.set('n', 'l', 'u', opts)
 vk.set('n', 'L', 'U', opts)
 
@@ -646,26 +644,6 @@ vk.set('n', '<C-t>', '11gk', opts)
 -- vk.set('n', 'H', ':m .+1<CR>==', opts)
 -- vk.set('n', 'T', ':m .-2<CR>==', opts)
 
--- NOTE: Formating stuff
-local toggle_format = true
--- toggle autoformat
-vk.set('n', '<leader>tf', function()
-  toggle_format = not toggle_format
-end, { noremap = true, silent = true, desc = '[T]oggle [F]ormat On Save' })
-
---Auto formatting
-vim.api.nvim_create_autocmd('BufWritePre', {
-  callback = function()
-    if toggle_format then
-      require('conform').format { async = false, lsp_format = 'fallback' }
-    end
-  end,
-})
--- Manual formating
-vk.set('n', '<leader>f', function()
-  require('conform').format { async = true, lsp_format = 'fallback' }
-end, { noremap = true, silent = true, desc = '[F]ormat Document' })
-
 -- toggle virtual text
 vk.set('n', '<leader>td', function()
   vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
@@ -677,9 +655,9 @@ vk.set('v', 't', 'gk', opts) -- up
 
 vk.set('v', 'h', 'gj', opts) -- down
 vk.set('v', 'j', 'e', opts)
-vk.set('v', 'e', 'h', opts) -- left
+vk.set('v', 'e', 'h', opts)  -- left
 
-vk.set('v', 'u', 'l', opts) -- right
+vk.set('v', 'u', 'l', opts)  -- right
 vk.set('v', 'l', 'u', opts)
 vk.set('v', 'L', 'U', opts)
 
@@ -779,40 +757,63 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.opt.shiftwidth = 2
   end,
 })
--- vim.api.nvim_create_autocmd('VimLeavePre', {
---   pattern = '*',
---   callback = function()
---     vim.cmd 'wqa!'
---   end,
--- })
 
-local delete_shada = function()
+vk.set('n', '<leader>ds', function()
   local keys = vim.api.nvim_replace_termcodes(
-    ':term<CR>aC:<CR>cd "C:\\Users\\User1\\AppData\\Local\\nvim-data"<CR>del shada<CR>Y<CR><C-\\><C-n><leader>h<CR>',
+    ':term<CR>aC:<CR>cd "C:\\Users\\User1\\AppData\\Local\\nvim-data\\shada"<CR>' ..
+    'del main.shada.tmp.a<CR>' ..
+    'del main.shada.tmp.b<CR>' ..
+    'del main.shada.tmp.c<CR>' ..
+    'del main.shada.tmp.d<CR>' ..
+    'del main.shada.tmp.e<CR>' ..
+    'del main.shada.tmp.f<CR>' ..
+    'del main.shada.tmp.g<CR>' ..
+    'del main.shada.tmp.h<CR>' ..
+    'del main.shada.tmp.i<CR>' ..
+    'del main.shada.tmp.j<CR>' ..
+    'del main.shada.tmp.k<CR>' ..
+    'del main.shada.tmp.l<CR>' ..
+    'del main.shada.tmp.m<CR>' ..
+    'del main.shada.tmp.n<CR>' ..
+    'del main.shada.tmp.o<CR>' ..
+    'del main.shada.tmp.p<CR>' ..
+    'del main.shada.tmp.q<CR>' ..
+    'del main.shada.tmp.r<CR>' ..
+    'del main.shada.tmp.s<CR>' ..
+    'del main.shada.tmp.k<CR>' ..
+    'del main.shada.tmp.l<CR>' ..
+    'del main.shada.tmp.m<CR>' ..
+    'del main.shada.tmp.n<CR>' ..
+    'del main.shada.tmp.o<CR>' ..
+    'del main.shada.tmp.p<CR>' ..
+    'del main.shada.tmp.q<CR>' ..
+    'del main.shada.tmp.r<CR>' ..
+    'del main.shada.tmp.s<CR>' ..
+    'del main.shada.tmp.t<CR>' ..
+    'del main.shada.tmp.w<CR>' ..
+    'del main.shada.tmp.x<CR>' ..
+    'del main.shada.tmp.y<CR>' ..
+    'del main.shada.tmp.z<CR>' ..
+    '<C-\\><C-n><C-o>',
     true,
     false,
     true
   )
   vim.api.nvim_feedkeys(keys, 'm', false)
 end
-
-vk.set('n', 'ds', delete_shada, { desc = 'Open terminal' })
+, { desc = '[D]elete [S]hada' })
 
 vim.g.editorconfig = false
 --color scheme by default
 vim.cmd 'colorscheme miasma'
 vim.opt.guicursor = 'n-v-c:block,i:ver10'
 
-vk.set('n', '<leader>te', function()
-  local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
-  vim.cmd('' .. pwd)
-end, { desc = '[T]oggle [E]xplorer', noremap = true, silent = true })
 
 vim.g.autoformat = false
 
 -- NOTE: Fold up setup
 vim.o.foldcolumn = '0' -- '0' is not bad
-vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 
@@ -825,21 +826,6 @@ vim.api.nvim_set_hl(0, 'LspReferenceRead', { undercurl = false, fg = '#d7c483', 
 vim.api.nvim_set_hl(0, 'LspReferenceWrite', { undercurl = false, fg = '#d7c483', bg = '#43492a', sp = '#fd9720' })
 -- LspReferenceText xxx gui=bold,undercurl guifg=#d7c483 guibg=#43492a guisp=#fd9720
 
--- NOTE: Comment setup
-local ft = require 'Comment.ft'
-
---1. Using method signature
--- Set only line comment or both
--- You can also chain the set calls
--- ft.set('yaml', '#%s').set('javascript', { '//%s', '/*%s*/' })
-
--- 2. Metatable magic
--- ft.javascript = { '//%s', '/*%s*/' }
--- ft.yaml = '#%s'
-
--- 3. Multiple filetypes
-ft({ 'conf', 'frag', 'shader', 'glsl', 'vert', 'txt' }, { '//%s', '/*%s*/' })
--- ft({ 'toml', 'graphql' }, '#%s')
 vim.diagnostic.config { virtual_text = true }
 
 -- NOTE: set current directory on startup

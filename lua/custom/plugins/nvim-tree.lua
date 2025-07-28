@@ -1,11 +1,18 @@
 return {
   'nvim-tree/nvim-tree.lua',
   version = '*',
-  lazy = false,
+  event = 'BufReadPost',
+  cmd = 'NvimTreeToggle',
   dependencies = {
     'nvim-tree/nvim-web-devicons',
   },
   config = function()
+    vim.keymap.set('n', '<leader>te', function()
+      local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
+      vim.cmd('' .. pwd)
+    end, { desc = '[T]oggle [E]xplorer', noremap = true, silent = true })
+
+
     require('nvim-tree').setup {
       help = {
         sort_by = 'desc',

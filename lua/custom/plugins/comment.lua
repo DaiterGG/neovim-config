@@ -1,5 +1,22 @@
 return {
   'numToStr/Comment.nvim',
+  event = 'BufReadPost',
+  -- config = function()
+  --   -- local ft = require 'Comment.ft'
+
+  --   --1. Using method signature
+  --   -- Set only line comment or both
+  --   -- You can also chain the set calls
+  --   -- ft.set('yaml', '#%s').set('javascript', { '//%s', '/*%s*/' })
+
+  --   -- 2. Metatable magic
+  --   -- ft.javascript = { '//%s', '/*%s*/' }
+  --   -- ft.yaml = '#%s'
+
+  --   -- 3. Multiple filetypes
+  --   -- ft({ 'test','conf', 'frag', 'shader', 'glsl', 'vert', 'txt' }, { '//%s', '/*%s*/' })
+  --   -- ft({ 'toml', 'graphql' }, '#%s')
+  -- end,
   opts = {
     ---Add a space b/w comment and the line
     padding = true,

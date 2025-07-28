@@ -147,6 +147,16 @@ return {
       { desc = '[/] Fuzzily search in current buffer' }
     )
 
+    local c_c = vim.api.nvim_replace_termcodes('<C-c>', true, true, true)
+    -- recent files window
+    vim.keymap.set('i', '<esc>', function()
+      vim.api.nvim_feedkeys(c_c, 'm', false)
+      local tl = require 'telescope'
+      if tl.active then
+        tl.actions.close()
+      end
+    end, opts)
+
     vim.keymap.set(
       'v',
       '<leader>/',

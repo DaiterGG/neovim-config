@@ -1,2 +1,1 @@
 <C-r>= on insert mode
-
