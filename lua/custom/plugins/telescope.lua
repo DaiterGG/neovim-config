@@ -6,7 +6,7 @@ end
 -- Fuzzy Finder (files, lsp, etc)
 return {
   'nvim-telescope/telescope.nvim',
-  event = 'VimEnter',
+  event = 'VeryLazy',
   branch = '0.1.x',
   dependencies = {
     'nvim-lua/plenary.nvim',
@@ -26,7 +26,7 @@ return {
     { 'nvim-telescope/telescope-ui-select.nvim' },
 
     -- Useful for getting pretty icons, but requires a Nerd Font.
-    { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+    { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
   },
   config = function()
     require('telescope').load_extension 'recent_files'
@@ -113,7 +113,8 @@ return {
 
     -- Map a shortcut to open the picker.
     -- vim.api.nvim_set_keymap('n', '<Leader><Leader>', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], { desc = 'Recent Files' })
-    vim.api.nvim_set_keymap('n', '<Leader>h', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]], { desc = 'Recent Files' })
+    vim.api.nvim_set_keymap('n', '<Leader>h', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]],
+      { desc = 'Recent Files' })
 
     -- select current directory
     vim.keymap.set('n', '<leader>sc', function()

@@ -1,19 +1,19 @@
 return {
   -- Main LSP Configuration
   'neovim/nvim-lspconfig',
-  event = 'BufReadPre',
+  event = 'BufReadPost',
   dependencies = {
     -- Automatically install LSPs and related tools to stdpath for Neovim
-    { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
-    'williamboman/mason-lspconfig.nvim',
-    'WhoIsSethDaniel/mason-tool-installer.nvim',
+    { 'williamboman/mason.nvim',                   event = 'BufReadPre', config = true }, -- NOTE: Must be loaded before dependants
+    { 'williamboman/mason-lspconfig.nvim',         event = 'BufRead' },
+    { 'WhoIsSethDaniel/mason-tool-installer.nvim', event = 'BufRead' },
 
     -- Useful status updates for LSP.
     -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-    { 'j-hui/fidget.nvim',       opts = {} },
+    { 'j-hui/fidget.nvim',                         event = 'BufRead',    opts = {} },
 
     -- Allows extra capabilities provided by nvim-cmp
-    'hrsh7th/cmp-nvim-lsp',
+    { 'hrsh7th/cmp-nvim-lsp',                      event = 'BufRead' }
   },
   config = function()
     -- Brief aside: **What is LSP?**
@@ -63,6 +63,7 @@ return {
         vim.keymap.del('n', 'gri')
         vim.keymap.del('n', 'grr')
         vim.keymap.del('n', 'grn')
+
 
         -- Jump to the implementation of the word under your cursor.
         --  Useful when your language has ways of declaring types without an actual implementation.

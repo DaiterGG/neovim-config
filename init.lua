@@ -25,8 +25,7 @@ vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 vim.opt.relativenumber = false
 
--- indent fix
-vim.api.nvim_create_autocmd('VimEnter', {
+vim.api.nvim_create_autocmd('UIEnter', {
   callback = function()
     vim.cmd 'set formatoptions-=r'
     vim.cmd 'set formatoptions-=c'
@@ -260,7 +259,7 @@ require('lazy').setup({
   -- },
   {
     'smartpde/telescope-recent-files',
-    event = 'VeryLazy',
+    event = 'BufReadPost',
   },
 
   --FOLD UFO
@@ -382,13 +381,14 @@ require('lazy').setup({
   },
 
   {
-    'vyfor/cord.nvim',
+    'vyfor/cord.nvim', event = 'InsertEnter'
   },
   -- awersome Git wrapper
   {
-    'tpope/vim-fugitive',
+    'tpope/vim-fugitive', event = 'BufReadPost',
   },
-  { 'hrsh7th/cmp-buffer' },
+  { 'hrsh7th/cmp-buffer', event = 'InsertEnter' },
+
 
   -- generate annotations
   {
@@ -523,16 +523,6 @@ require('lazy').setup({
   },
 })
 
--- NOTE: Command mode keymap
-local cmp = require 'cmp'
-local wrap1 = function()
-  cmp.select_next_item()
-end
-local wrap2 = function()
-  cmp.select_prev_item()
-end
-vk.set('c', '<C-h>', wrap1, opts)
-vk.set('c', '<C-t>', wrap2, opts)
 vk.set('c', '<C-n>', '<C-t><C-h>', { remap = true })
 
 vk.set('c', '<A-h>', '<down>', { noremap = false })
@@ -566,6 +556,8 @@ vk.set('i', '<A-w>', '<C-\\><C-n><cmd>w<CR>', { silent = true })
 -- NOTE: Normal mode keymap
 
 vk.set('n', '<CR>', 'A<CR><Esc>', opts)
+
+vk.set('n', 'ga', 'gi', { remap = true, desc = 'Go to last inserted text' })
 
 -- Diagnostic keymaps
 vk.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })

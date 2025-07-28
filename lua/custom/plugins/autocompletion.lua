@@ -44,11 +44,21 @@ return { -- Autocompletion
       AutoEnable = not AutoEnable
     end, { desc = '[T]oggle [A]utocompletion' })
 
+
     -- See `:help cmp`
     local cmp = require 'cmp'
     -- local luasnip = require 'luasnip'
     -- luasnip.config.setup {}
 
+    -- NOTE: Command mode keymap
+    local wrap1 = function()
+      cmp.select_next_item()
+    end
+    local wrap2 = function()
+      cmp.select_prev_item()
+    end
+    vim.keymap.set('c', '<C-h>', wrap1, opts)
+    vim.keymap.set('c', '<C-t>', wrap2, opts)
     cmp.setup {
       -- snippet = {
       --   expand = function(args)

@@ -38,9 +38,9 @@ return {
   'Exafunction/windsurf.nvim',
   dependencies = {
     'nvim-lua/plenary.nvim',
-    'hrsh7th/nvim-cmp',
+    -- 'hrsh7th/nvim-cmp',
   },
-  event = 'BufReadPost',
+  event = 'InsertEnter',
   config = function()
     vim.keymap.set('n', '<leader>tc', ':Codeium Toggle<cr>', { silent = true, desc = '[T]oggle [C]odeium' })
     require('codeium').setup {

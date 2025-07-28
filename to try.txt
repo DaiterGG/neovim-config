@@ -1,1 +1,5 @@
 <C-r>= on insert mode
+init_selection = "gii",
+node_incremental = "gii",
+scope_incremental = "gic",
+node_decremental = "gis",

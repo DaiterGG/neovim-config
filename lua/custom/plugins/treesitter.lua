@@ -1,13 +1,28 @@
-return
 --TREESITTER
+return
 { -- Highlight, edit, and navigate code
   'nvim-treesitter/nvim-treesitter',
   build = ':TSUpdate',
   main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+  event = 'BufReadPost',
   config = function()
     -- require('nvim-treesitter.install').compilers = { 'cc', 'gcc', 'clang', 'cl', 'zig' }
     require('nvim-treesitter.install').compilers = { 'cl', 'zig' }
     require('nvim-treesitter.install').prefer_git = false
+
+    vim.keymap.set('n', 'gi', function() end, {})
+    vim.keymap.del('n', 'gi')
+    require 'nvim-treesitter.configs'.setup {
+      incremental_selection = {
+        enable = true,
+        keymaps = {
+          init_selection = "gii",
+          node_incremental = "gii",
+          scope_incremental = "gic",
+          node_decremental = "gis",
+        },
+      },
+    }
     -- vim.api.nvim_set_hl(0, '@markup.underline', { underline = false })
   end,
   -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -45,7 +60,7 @@ return
   -- There are additional nvim-treesitter modules that you can use to interact
   -- with nvim-treesitter. You should go explore a few and see what interests you:
   --
-  --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
+  -- - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
   --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
   --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 }

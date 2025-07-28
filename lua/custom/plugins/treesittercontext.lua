@@ -1,5 +1,6 @@
 return {
   'nvim-treesitter/nvim-treesitter-context',
+  event = 'BufReadPost',
   opts = {
     enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
     multiwindow = true, -- Enable multiwindow support.
