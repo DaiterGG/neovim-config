@@ -36,15 +36,13 @@
 
 return {
   'Exafunction/windsurf.nvim',
-  dependencies = {
-    'nvim-lua/plenary.nvim',
-    -- 'hrsh7th/nvim-cmp',
-  },
+  -- dependencies = {
+  --   'nvim-lua/plenary.nvim',
+  --   'hrsh7th/nvim-cmp',
+  -- },
   event = 'InsertEnter',
   config = function()
-    vim.keymap.set('n', '<leader>tc', ':Codeium Toggle<cr>', { silent = true, desc = '[T]oggle [C]odeium' })
     require('codeium').setup {
-
       enable_cmp_source = false,
       virtual_text = {
         enabled = true,
@@ -67,7 +65,7 @@ return {
         map_keys = true,
         -- The key to press when hitting the accept keybinding but no completion is showing.
         -- Defaults to \t normally or <c-n> when a popup is showing.
-        accept_fallback = nil,
+        accept_fallback = '',
         -- Key bindings for managing completions in virtual text mode.
         key_bindings = {
           -- Accept the current completion.
@@ -84,5 +82,15 @@ return {
         },
       },
     }
+
+    WindIsOn = false
+    vim.cmd 'Codeium Toggle'
+    vim.cmd 'cd'
+
+    vim.keymap.set('n', '<leader>tw', function()
+      WindIsOn = not WindIsOn
+      vim.cmd 'Codeium Toggle'
+    end
+    , { silent = false, desc = '[T]oggle [W]indsurf' })
   end,
 }

@@ -12,12 +12,12 @@ return {
       bg = '#222222',
       black = '#1c1c1c',
       grey = '#666666',
-      red = '#685742',
-      green = '#5f875f',
-      yellow = '#B36D43',
-      blue = '#78824B',
-      magenta = '#bb7744',
-      cyan = '#C9A554',
+      brown = '#685742',
+      green_bright = '#5f875f',
+      red = '#B36D43',
+      green_select = '#78824B',
+      orange = '#bb7744',
+      golden = '#C9A554',
       white = '#D7C483',
     }
 
@@ -25,9 +25,9 @@ return {
       buffer_not_empty    = function()
         return vim.fn.empty(vim.fn.expand '%:t') ~= 1
       end,
-      windsurf_status_on  = function()
-        return (' 0 ' ~= require('codeium.virtual_text').status_string())
-      end,
+      -- windsurf_status_on  = function()
+      --   return (' 0 ' ~= require('codeium.virtual_text').status_string())
+      -- end,
       hide_in_width_first = function()
         return vim.fn.winwidth(0) > 80
       end,
@@ -42,26 +42,26 @@ return {
     }
     -- auto change color according to neovims mode
     local mode_color = {
-      n = colors.magenta,
-      i = colors.green,
-      v = colors.blue,
-      [''] = colors.blue,
-      V = colors.blue,
-      c = colors.red,
-      no = colors.red,
+      n = colors.orange,
+      i = colors.green_bright,
+      v = colors.green_select,
+      [''] = colors.green_select,
+      V = colors.green_select,
+      c = colors.brown,
+      no = colors.brown,
       s = colors.orange,
       S = colors.orange,
       [''] = colors.orange,
-      ic = colors.yellow,
-      R = colors.yellow,
-      Rv = colors.yellow,
-      cv = colors.yellow,
-      ce = colors.yellow,
-      r = colors.cyan,
-      rm = colors.cyan,
-      ['r?'] = colors.cyan,
-      ['!'] = colors.red,
-      t = colors.red,
+      ic = colors.red,
+      R = colors.red,
+      Rv = colors.red,
+      cv = colors.red,
+      ce = colors.red,
+      r = colors.golden,
+      rm = colors.golden,
+      ['r?'] = colors.golden,
+      ['!'] = colors.brown,
+      t = colors.brown,
     }
     local mode_text_color = {
       n = colors.black,
@@ -200,8 +200,7 @@ return {
     }
     active_left {
       'branch',
-      -- icon = ' ',
-      color = { bg = colors.blue, fg = colors.black },
+      color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 1 },
       separator = { right = '▓▒░', left = '░▒▓' },
     }
@@ -232,19 +231,61 @@ return {
     -- active right section
     active_right {
       function()
+        local res = 'llm on:'
         local some = require('codeium.virtual_text').status_string()
         if some == ' 0 ' then
-          return ''
+          res = res .. ' 0'
+        else
+          res = res .. some
         end
-        return some
+        if not WindIsOn then
+          res = 'llm off'
+        end
+        return res
       end,
       icon = '󱚝',
-      color = { bg = colors.blue, fg = colors.black },
+      color = { bg = colors.brown, fg = colors.white },
+      padding = { left = 1, right = 1 },
+      cond = function()
+        return true
+      end,
+      separator = { right = '▓▒░', left = '░▒▓' },
+    }
+
+
+    active_right {
+      'diagnostics',
+      sources = { 'nvim_diagnostic' },
+      symbols = { error = ' ', warn = ' ', info = ' ' },
+      colored = false,
+      color = { bg = colors.orange, fg = colors.black },
+      padding = { left = 1, right = 1 },
+      separator = { right = '▓▒░', left = '░▒▓' },
+    }
+    active_right {
+      'searchcount',
+      icon = '',
+      color = { bg = colors.golden, fg = colors.black },
+      padding = { left = 1, right = 1 },
+      separator = { right = '▓▒░', left = '░▒▓' },
+    }
+
+    active_right {
+      function()
+        local res
+        if AutoEnable then
+          res = 'off'
+        else
+          res = 'on'
+        end
+        return 'lsp ' .. res
+      end,
+      icon = '',
+      color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 1 },
       cond = conditions.hide_in_width,
       separator = { right = '▓▒░', left = '░▒▓' },
     }
-
     active_right {
       function()
         local clients = vim.lsp.get_clients()
@@ -257,33 +298,16 @@ return {
         local lsp_lbl = dump(clients_list):gsub('(.*),', '%1')
         return lsp_lbl:gsub(',', ', ')
       end,
-      icon = '',
-      color = { bg = colors.green, fg = colors.black },
+      icon = '󰒓',
+      color = { bg = colors.green_bright, fg = colors.black },
       padding = { left = 1, right = 1 },
       cond = conditions.hide_in_width_first,
-      separator = { right = '▓▒░', left = '░▒▓' },
-    }
-
-    active_right {
-      'diagnostics',
-      sources = { 'nvim_diagnostic' },
-      symbols = { error = ' ', warn = ' ', info = ' ' },
-      colored = false,
-      color = { bg = colors.magenta, fg = colors.black },
-      padding = { left = 1, right = 1 },
-      separator = { right = '▓▒░', left = '░▒▓' },
-    }
-    active_right {
-      'searchcount',
-      icon = '',
-      color = { bg = colors.cyan, fg = colors.black },
-      padding = { left = 1, right = 1 },
       separator = { right = '▓▒░', left = '░▒▓' },
     }
     active_right {
       'location',
       icon = '',
-      color = { bg = colors.red, fg = colors.white },
+      color = { bg = colors.brown, fg = colors.white },
       padding = { left = 1, right = 0 },
       separator = { left = '░▒▓' },
     }
@@ -293,7 +317,7 @@ return {
         local total = vim.fn.line '$'
         return string.format('%2d%%%%', math.floor(cur / total * 100))
       end,
-      color = { bg = colors.red, fg = colors.white },
+      color = { bg = colors.brown, fg = colors.white },
       padding = { left = 1, right = 1 },
       cond = conditions.hide_in_width,
       separator = { right = '▓▒░' },
@@ -304,14 +328,14 @@ return {
       icon = '',
       cond = conditions.hide_in_width,
       padding = { left = 1, right = 1 },
-      color = { bg = colors.blue, fg = colors.black },
+      color = { bg = colors.green_select, fg = colors.black },
     }
     active_right {
       'fileformat',
       fmt = string.lower,
       icons_enabled = true,
       cond = conditions.hide_in_width,
-      color = { bg = colors.blue, fg = colors.black },
+      color = { bg = colors.green_select, fg = colors.black },
       separator = { right = '' },
       padding = { left = 0, right = 1 },
     }

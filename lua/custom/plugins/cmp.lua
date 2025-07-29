@@ -37,7 +37,7 @@ return { -- Autocompletion
     --Enable (broadcasting) snippet capability for completion
   },
   config = function()
-    -- NOTE: toggle actocomp
+    -- NOTE: toggle actocompletion
     AutoEnable = false
     vim.keymap.set('n', '<leader>ta', function()
       require('cmp').setup { enabled = AutoEnable }
