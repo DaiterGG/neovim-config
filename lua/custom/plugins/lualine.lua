@@ -25,14 +25,13 @@ return {
       buffer_not_empty    = function()
         return vim.fn.empty(vim.fn.expand '%:t') ~= 1
       end,
-      -- windsurf_status_on  = function()
-      --   return (' 0 ' ~= require('codeium.virtual_text').status_string())
-      -- end,
-      hide_in_width_first = function()
-        return vim.fn.winwidth(0) > 80
+      no_git              = function()
+        local filepath = vim.fn.expand '%:p:h'
+        local gitdir = vim.fn.finddir('.git', filepath .. ';')
+        return gitdir == ""
       end,
-      hide_in_width       = function()
-        return vim.fn.winwidth(0) > 70
+      buffer_empty        = function()
+        return vim.fn.empty(vim.fn.expand '%:t') == 1
       end,
       check_git_workspace = function()
         local filepath = vim.fn.expand '%:p:h'
@@ -189,7 +188,7 @@ return {
       color = function()
         return { bg = mode_color[vim.fn.mode()], fg = mode_text_color[vim.fn.mode()] }
       end,
-      padding = { left = 1, right = 1 },
+      padding = { left = 0, right = 1 },
       separator = { right = '▓▒░' },
       symbols = {
         modified = '󰶻 ',
@@ -199,12 +198,33 @@ return {
       },
     }
     active_left {
+      function()
+        return 'welcome.nvim'
+      end,
+      cond = conditions.buffer_empty,
+      color = function()
+        return { bg = mode_color[vim.fn.mode()], fg = mode_text_color[vim.fn.mode()] }
+      end,
+      padding = { left = 0, right = 1 },
+      separator = { right = '▓▒░' },
+    }
+    active_left {
       'branch',
       color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 1 },
       separator = { right = '▓▒░', left = '░▒▓' },
     }
 
+    active_left {
+      function()
+        return "none"
+      end,
+      cond = conditions.no_git,
+      icon = "",
+      color = { bg = colors.green_select, fg = colors.black },
+      padding = { left = 1, right = 1 },
+      separator = { right = '▓▒░', left = '░▒▓' },
+    }
     -- inactive left section
     inactive_left {
       function()
@@ -243,8 +263,8 @@ return {
         end
         return res
       end,
-      icon = '󱚝',
-      color = { bg = colors.brown, fg = colors.white },
+      icon = '',
+      color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 1 },
       cond = function()
         return true
@@ -281,9 +301,8 @@ return {
         return 'lsp ' .. res
       end,
       icon = '',
-      color = { bg = colors.green_select, fg = colors.black },
+      color = { bg = colors.green_bright, fg = colors.black },
       padding = { left = 1, right = 1 },
-      cond = conditions.hide_in_width,
       separator = { right = '▓▒░', left = '░▒▓' },
     }
     active_right {
@@ -299,15 +318,14 @@ return {
         return lsp_lbl:gsub(',', ', ')
       end,
       icon = '󰒓',
-      color = { bg = colors.green_bright, fg = colors.black },
+      color = { bg = colors.golden, fg = colors.black },
       padding = { left = 1, right = 1 },
-      cond = conditions.hide_in_width_first,
       separator = { right = '▓▒░', left = '░▒▓' },
     }
     active_right {
       'location',
       icon = '',
-      color = { bg = colors.brown, fg = colors.white },
+      color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 0 },
       separator = { left = '░▒▓' },
     }
@@ -317,25 +335,22 @@ return {
         local total = vim.fn.line '$'
         return string.format('%2d%%%%', math.floor(cur / total * 100))
       end,
-      color = { bg = colors.brown, fg = colors.white },
+      color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 1 },
-      cond = conditions.hide_in_width,
       separator = { right = '▓▒░' },
     }
     active_right {
       'o:encoding',
       fmt = string.upper,
       icon = '',
-      cond = conditions.hide_in_width,
       padding = { left = 1, right = 1 },
-      color = { bg = colors.green_select, fg = colors.black },
+      color = { bg = colors.orange, fg = colors.black },
     }
     active_right {
       'fileformat',
       fmt = string.lower,
       icons_enabled = true,
-      cond = conditions.hide_in_width,
-      color = { bg = colors.green_select, fg = colors.black },
+      color = { bg = colors.orange, fg = colors.black },
       separator = { right = '' },
       padding = { left = 0, right = 1 },
     }
@@ -349,7 +364,6 @@ return {
     inactive_right {
       'progress',
       color = { bg = colors.black, fg = colors.grey },
-      cond = conditions.hide_in_width,
       padding = { left = 1, right = 1 },
       separator = { right = '▓▒░' },
     }
@@ -357,7 +371,6 @@ return {
       'fileformat',
       fmt = string.lower,
       icons_enabled = false,
-      cond = conditions.hide_in_width,
       color = { bg = colors.black, fg = colors.grey },
       separator = { right = '▓▒░' },
       padding = { left = 0, right = 1 },

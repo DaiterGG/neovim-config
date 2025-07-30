@@ -13,14 +13,17 @@ local directory_configs = {}
 
 -- Check if current directory contains target directory in its path
 local function is_in_directory(target_dir)
-  local cwd = vim.fn.getcwd():gsub('\\', '/') -- Normalize path for Windows
-  local parts = vim.split(cwd, '/')
-  for _, part in ipairs(parts) do
-    if part == target_dir then
-      return true
-    end
-  end
-  return false
+  -- local cwd = vim.fn.getcwd():gsub('\\', '/') -- Normalize path for Windows
+  -- local parts = vim.split(cwd, '/')
+  -- for _, part in ipairs(parts) do
+  --   if part == target_dir then
+  --     return true
+  --   end
+  -- end
+  -- return false
+
+  -- Make it any matching part
+  return vim.fn.getcwd():find(target_dir) ~= nil
 end
 
 -- Execute registered functions for matching directories

@@ -13,6 +13,16 @@ return
     },
   },
   opts = {
+    sort = { "local", "order", "group", "manual", "mod" },
+    plugins = {
+      presets = {
+        z = false,
+      },
+    },
+    keys = {
+      scroll_down = "<a-h>", -- binding to scroll down inside the popup
+      scroll_up = "<a-t>",   -- binding to scroll up inside the popup
+    },
     icons = {
       -- set icon mappings to true if you have a Nerd Font
       mappings = vim.g.have_nerd_font,
@@ -55,6 +65,7 @@ return
       { '<leader>c', group = '[C]ode',           mode = { 'n', 'x' } },
       { 'gi',        group = '[I]ncrement',      mode = { 'v' } },
       { '<leader>d', group = '[D]ocument' },
+      { 'za',        group = '[A]ll folds' },
       { '<leader>r', group = '[R]ename' },
       { '<leader>s', group = '[S]earch/[S]elect' },
       { '<leader>w', group = '[W]orkspace' },

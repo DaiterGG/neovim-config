@@ -1,4 +1,5 @@
 -- neovim-tree requires this
+--
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.swapfile = false
@@ -9,7 +10,6 @@ vim.g.maplocalleader = ' '
 vim.opt.expandtab = true
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
-
 -- [[ setting options ]]
 -- see `:help vim.opt`
 -- note: you can change these options as you wish!
@@ -33,7 +33,6 @@ vim.api.nvim_create_autocmd('UIEnter', {
 })
 -- Enable break indent
 vim.opt.breakindent = true
-
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = {}
@@ -212,10 +211,11 @@ require('lazy').setup({
   -- },
   {
     'OmniSharp/omnisharp-vim',
+    event = "BufReadPost",
     ft = { 'cs' },
   },
   -- LSP Plugins
-  { 'Bilal2453/luvit-meta' },
+  { 'Bilal2453/luvit-meta',   event = "BufReadPost" },
 
   {
     'xero/miasma.nvim',
@@ -271,28 +271,33 @@ require('lazy').setup({
 
       vk.set('n', 'zao', require('ufo').openAllFolds, { desc = '[A]ll [O]pen' })
       vk.set('n', 'zac', require('ufo').closeAllFolds, { desc = '[A]ll [C]lose' })
+
+      vk.set('n', 'zf', 'zf', { desc = '[F]old create' })
+      vk.set('n', 'zc', 'zc', { desc = '[C]lose fold under cursor' })
+      vk.set('n', 'zo', 'zo', { desc = '[O]pen fold under cursor' })
+      vk.set('n', 'zt', 'za', { desc = '[T]oggle fold under cursor' })
+
+
+      -- NOTE: Fold up setup
+      vim.o.foldcolumn = '0' -- '0' is not bad
+      vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
+      vim.o.foldlevelstart = 99
+      vim.o.foldenable = true
     end,
   },
 
   -- using lazy.nvim
-  {
-    'S1M0N38/love2d.nvim',
-    cmd = 'LoveRun',
-    opts = {},
-    keys = {},
-  },
-  -- NEW DISCORD RPC
   -- {
-  --   'IogaMaster/neocord',
-  --   event = 'VeryLazy',
-  -- },
-  -- {
-  --   'andweeb/presence.nvim',
+  --   'S1M0N38/love2d.nvim',
+  --   cmd = 'LoveRun',
+  --   opts = {},
+  --   keys = {},
   -- },
 
   -- Cool highlight in visual mode
   {
     'wurli/visimatch.nvim',
+    event = "BufReadPost",
     opts = {
       -- The highlight group to apply to matched text
       hl_group = 'CursorIM',
@@ -377,11 +382,11 @@ require('lazy').setup({
     end,
   },
 
+  -- discord RPC
   {
     'vyfor/cord.nvim', event = 'InsertEnter'
   },
-  -- awersome Git wrapper
-  {
+  { -- awersome Git wrapper
     'tpope/vim-fugitive', event = 'BufReadPost',
   },
   { 'hrsh7th/cmp-buffer', event = 'InsertEnter' },
@@ -392,9 +397,9 @@ require('lazy').setup({
     'danymat/neogen',
     event = 'BufReadPost',
     config = function()
+      require('neogen').setup()
       vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", { desc = 'generate comments' })
     end,
-
     -- Uncomment next line if you want to follow only stable versions
     -- version = "*"
   },
@@ -419,24 +424,24 @@ require('lazy').setup({
     version = '^6', -- Recommended
     lazy = false,   -- This plugin is already lazy
 
-    -- debugger setup
-    config = function()
-      local mason_reg = require 'mason-registry'
-      local codelldb = mason_reg.get_package 'codelldb'
-      local extension_path = codelldb:get_install_path() .. '/extension/'
-      local codelldb_path = extension_path .. 'adapter/codelldb'
-      local liblldb_path = extension_path .. 'lldb/lib/liblldb.dylib'
-      local cfg = require 'rustaceanvim.config'
+    -- -- debugger setup
+    -- config = function()
+    --   local mason_reg = require 'mason-registry'
+    --   local codelldb = mason_reg.get_package 'codelldb'
+    --   local extension_path = codelldb:get_install_path() .. '/extension/'
+    --   local codelldb_path = extension_path .. 'adapter/codelldb'
+    --   local liblldb_path = extension_path .. 'lldb/lib/liblldb.dylib'
+    --   local cfg = require 'rustaceanvim.config'
 
-      -- vim.g.rustaceanvim = {
-      --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path) },
-      -- }
-      -- vim.g.rustaceanvim = {
-      --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path) },
-      -- }
-    end,
+    --   -- vim.g.rustaceanvim = {
+    --   --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path) },
+    --   -- }
+    --   -- vim.g.rustaceanvim = {
+    --   --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path) },
+    --   -- }
+    -- end,
   },
-  -- NOTE: debugger setup (there is a default config in kickstarter
+  -- NOTE: debugger setup (there is a default config in kickstarter)
   -- {
   --   event = 'BufReadPost',
   --   'mfussenegger/nvim-dap',
@@ -490,13 +495,17 @@ require('lazy').setup({
   --   end,
   -- },
 
+  -- nodejs
   -- { 'neoclide/coc.nvim', branch = 'release' },
+
+
   -- New plugins go here
   --
   --
   --
   --
 }, {
+  git = { timeout = 1200 },
   change_detection = { enabled = true, notify = false },
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
@@ -534,6 +543,8 @@ vk.set('c', '<A-e>', '<left>', { noremap = false })
 vk.set('c', '<A-u>', '<right>', { noremap = false })
 
 -- NOTE: Terminal mode keymap
+vk.set('t', '<C-c>', '<Esc>', opts)
+
 vk.set('t', '<Esc>', '<C-\\><C-n>', opts)
 
 vk.set('t', '<C-h>', '<Down>', { remap = true })
@@ -553,11 +564,51 @@ vk.set('t', '<A-->', '<C-\\><C-n><C-w>-a', { remap = true })
 
 -- NOTE: Insert mode keymap
 vk.set('i', '<C-c>', '<Esc>', opts)
+
 vk.set('i', '<C-p>', '<C-r>"', opts)
 
 
 vk.set('i', '<A-w>', '<C-\\><C-n><cmd>w<CR>', { silent = true })
+
+-- NOTE: Visual mode keymap
+vk.set('v', '<C-c>', '<Esc>', opts)
+
+vk.set('v', 'k', 't', opts)
+vk.set('v', 't', 'gk', opts) -- up
+
+vk.set('v', 'h', 'gj', opts) -- down
+vk.set('v', 'j', 'e', opts)
+vk.set('v', 'e', 'h', opts)  -- left
+
+vk.set('v', 'u', 'l', opts)  -- right
+vk.set('v', 'l', 'u', opts)
+vk.set('v', 'L', 'U', opts)
+
+vk.set('v', '<C-e>', '6h', opts)
+vk.set('v', '<C-u>', '6l', opts)
+
+vk.set('v', '<C-h>', '6gj', opts)
+vk.set('v', '<C-t>', '6gk', opts)
+
+vk.set('v', '$', '$h', opts)
+
+-- MoveLine
+-- now in mini.move
+-- vk.set('v', 'H', ":m '>+1<CR>gv=gv", opts)
+-- vk.set('v', 'T', ":m '<-2<CR>gv=gv", opts)
+
+--Paste over
+vk.set('v', 'p', 'P', opts)
+vk.set('v', 'P', 'p', opts)
+
+--Replace
+vk.set('v', '<C-r>', '"1y:%s/<C-r>1/<C-r>1/gc<Left><Left><Left>', { desc = 'Replace' })
+
+-- vk.set('v', '<C-_>', 'y/<C-r>"<CR>', { remap = true })
 -- NOTE: Normal mode keymap
+--
+vk.set({ 'n' }, '<C-c>', '<Esc>:noh<cr>', opts)
+vk.set({ 'o' }, '<C-c>', '<Esc>:noh<cr>', opts)
 
 vk.set('n', '<CR>', 'A<CR><Esc>', opts)
 
@@ -585,33 +636,6 @@ vk.set('n', '<leader><tab>', ':tabnext<CR>', { desc = 'Next tab' })
 -- Quick save
 vk.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
 
--- folds
-vk.set('n', 'zt', 'za', { desc = '[T]oggle fold under cursor' })
-vk.set('n', 'zat', 'zA', { desc = '[A]ll [T]oggle fold under cursor' })
-
--- vk.set('n', 'zac', 'zC', { desc = '[A]ll [C]lose under cursor' })
--- vk.set('n', 'zao', 'zO', { desc = '[A]ll [O]pen under cursor' })
-
-vk.set('n', 'zad', 'zD', { desc = '[A]ll [D]elete under cursor' })
-vk.set('n', 'zaf', 'zE', { desc = 'delete [A]ll folds in a [F]ile' })
-
--- vk.del('n', 'zAA')
--- vk.set('n', 'zAA', function() end, { desc = '' })
--- vk.set('n', 'zLL', function() end, { desc = '' })
--- vk.set('n', 'zss', function() end, { desc = '' })
--- vk.set('n', 'zee', function() end, { desc = '' })
--- vk.set('n', 'zgg', function() end, { desc = '' })
--- vk.set('n', 'zMM', function() end, { desc = '' })
--- vk.set('n', 'zHH', function() end, { desc = '' })
--- vk.set('n', 'zvv', function() end, { desc = '' })
--- vk.set('n', 'zww', function() end, { desc = '' })
--- vk.set('n', 'zbb', function() end, { desc = '' })
--- vk.set('n', 'zDD', function() end, { desc = '' })
--- vk.set('n', 'zCC', function() end, { desc = '' })
--- vk.set('n', 'zEE', function() end, { desc = '' })
--- vk.set('n', 'zRR', function() end, { desc = '' })
--- vk.set('n', 'zOO', function() end, { desc = '' })
--- vk.set('n', 'z<CR><CR>', function() end, { desc = '' })
 
 -- Jump to previous locations
 -- my right ctrl is in akward position on my laptop
@@ -630,11 +654,11 @@ vk.set('n', 'u', 'l', opts)  -- right
 vk.set('n', 'l', 'u', opts)
 vk.set('n', 'L', 'U', opts)
 
-vk.set('n', '<C-e>', '11h', opts)
-vk.set('n', '<C-u>', '11l', opts)
+vk.set('n', '<C-e>', '6h', opts)
+vk.set('n', '<C-u>', '6l', opts)
 
-vk.set('n', '<C-h>', '11gj', opts)
-vk.set('n', '<C-t>', '11gk', opts)
+vk.set('n', '<C-h>', '6gj', opts)
+vk.set('n', '<C-t>', '6gk', opts)
 
 -- MoveLine
 -- vk.set('n', 'H', ':m .+1<CR>==', opts)
@@ -644,40 +668,6 @@ vk.set('n', '<C-t>', '11gk', opts)
 vk.set('n', '<leader>td', function()
   vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
 end, { noremap = true, silent = true, desc = '[T]oggle [D]iagnostics virtual text' })
--- NOTE: Visual mode keymap
-
-vk.set('v', 'k', 't', opts)
-vk.set('v', 't', 'gk', opts) -- up
-
-vk.set('v', 'h', 'gj', opts) -- down
-vk.set('v', 'j', 'e', opts)
-vk.set('v', 'e', 'h', opts)  -- left
-
-vk.set('v', 'u', 'l', opts)  -- right
-vk.set('v', 'l', 'u', opts)
-vk.set('v', 'L', 'U', opts)
-
-vk.set('v', '<C-e>', '11h', opts)
-vk.set('v', '<C-u>', '11l', opts)
-
-vk.set('v', '<C-h>', '11gj', opts)
-vk.set('v', '<C-t>', '11gk', opts)
-
-vk.set('v', '$', '$h', opts)
-
--- MoveLine
--- now in mini.move
--- vk.set('v', 'H', ":m '>+1<CR>gv=gv", opts)
--- vk.set('v', 'T', ":m '<-2<CR>gv=gv", opts)
-
---Paste over
-vk.set('v', 'p', 'P', opts)
-vk.set('v', 'P', 'p', opts)
-
---Replace
-vk.set('v', '<C-r>', '"1y:%s/<C-r>1/<C-r>1/gc<Left><Left><Left>', { desc = 'Replace' })
-
--- vk.set('v', '<C-_>', 'y/<C-r>"<CR>', { remap = true })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
@@ -715,6 +705,13 @@ end)
 -- For quick board
 dir_config.setup_directory_config('quick-board', function()
   --
+end)
+-- Startup
+dir_config.setup_directory_config('WindowsApps', function()
+  vim.cmd [[cd C:\Users\User1\AppData\Local\nvim]]
+end)
+dir_config.setup_directory_config('Neovim\\bin', function()
+  vim.cmd [[cd C:\Users\User1\AppData\Local\nvim]]
 end)
 
 -- NOTE: Tab settings
@@ -790,7 +787,7 @@ vk.set('n', '<leader>ds', function()
     'del main.shada.tmp.x<CR>' ..
     'del main.shada.tmp.y<CR>' ..
     'del main.shada.tmp.z<CR>' ..
-    '<C-\\><C-n><C-o>:echo Shada Deleted<CR>',
+    '<C-\\><C-n><C-o>:echo "Shada Deleted"<CR>',
     true,
     false,
     true
@@ -805,25 +802,17 @@ vim.cmd 'colorscheme miasma'
 vim.opt.guicursor = 'n-v-c:block,i:ver10'
 
 vim.g.autoformat = false
--- NOTE: Fold up setup
-vim.o.foldcolumn = '0' -- '0' is not bad
-vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
-vim.o.foldlevelstart = 99
-vim.o.foldenable = true
-
 vim.o.titlestring = [[%t – %F]]
 vim.o.title = true
 
-vim.api.nvim_set_hl(0, 'MatchParen', { underline = true,undercurl = false,fg = '#fd9720', sp = '#fd9720'--[[ , bg = '#bb7744' ]] })
-vim.api.nvim_set_hl(0, 'CodeiumSuggestion', { undercurl = false, fg = '#5f875f' })
+vim.api.nvim_set_hl(0, 'MatchParen',
+  { underline = true, underdouble = true, undercurl = false, fg = '#bb7744', sp = '#bb7744' --[[ , bg = '#bb7744' ]] })
 vim.api.nvim_set_hl(0, 'LspReferenceText', { undercurl = false, fg = '#d7c483', bg = '#685742', sp = '#fd9720' })
 vim.api.nvim_set_hl(0, 'LspReferenceRead', { undercurl = false, fg = '#d7c483', bg = '#685742', sp = '#fd9720' })
 vim.api.nvim_set_hl(0, 'LspReferenceWrite', { undercurl = false, fg = '#d7c483', bg = '#685742', sp = '#fd9720' })
 
+-- Define highlight groups
 vim.diagnostic.config { virtual_text = true }
 
--- NOTE: set current directory on startup
-pcall(function()
-  vim.cmd 'cd %:h'
-end)
+vim.cmd 'cd %:p:h'
 vim.cmd 'cd'

@@ -42,6 +42,7 @@ return {
   -- },
   event = 'InsertEnter',
   config = function()
+    vim.api.nvim_set_hl(0, 'CodeiumSuggestion', { undercurl = false, fg = '#5f875f' })
     require('codeium').setup {
       enable_cmp_source = false,
       virtual_text = {

@@ -16,10 +16,10 @@ return
       incremental_selection = {
         enable = true,
         keymaps = {
-          init_selection = "gii",
-          node_incremental = "gii",
-          scope_incremental = "gic",
-          node_decremental = "gis",
+          init_selection = "gi",
+          node_incremental = "gi",
+          scope_incremental = "gqqqq",
+          node_decremental = "gs",
         },
       },
     }
