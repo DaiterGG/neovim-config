@@ -16,6 +16,20 @@ return {
     { 'hrsh7th/cmp-nvim-lsp',                      event = 'BufRead' }
   },
   config = function()
+    HighlightOn = true
+    local desc = '[T]oggle [S]elect highlight'
+    ToggleHighlightF = function()
+      vim.keymap.set('n', '<leader>ts', function()
+        HighlightOn = not HighlightOn
+        vim.lsp.buf.clear_references()
+        ToggleHighlightF()
+      end, { desc = (HighlightOn and '[ON] ' or '[OFF] ') .. desc })
+    end
+    ToggleHighlightF()
+
+    vim.api.nvim_set_hl(0, 'LspReferenceText', { undercurl = false, fg = '#d7c483', bg = '#685742' })
+    vim.api.nvim_set_hl(0, 'LspReferenceRead', { undercurl = false, fg = '#d7c483', bg = '#685742' })
+    vim.api.nvim_set_hl(0, 'LspReferenceWrite', { undercurl = false, fg = '#d7c483', bg = '#685742' })
     -- Brief aside: **What is LSP?**
     --
     -- LSP is an initialism you've probably heard, but might not understand what it is.
@@ -45,7 +59,7 @@ return {
         -- for LSP related items. It sets the mode, buffer and description for us each time.
         local map = function(keys, func, desc, mode)
           mode = mode or 'n'
-          vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
+          vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = desc })
         end
 
         -- Jump to the definition of the word under your cursor.
@@ -100,13 +114,17 @@ return {
         --    See `:help CursorHold` for information about when this is executed
         --
         -- When you move your cursor, the highlights will be cleared (the second autocommand).
-        local client = vim.lsp.get_client_by_id(event.data.client_id)
+
         if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
           local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
           vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
             buffer = event.buf,
             group = highlight_augroup,
-            callback = vim.lsp.buf.document_highlight,
+            callback = function()
+              if HighlightOn then
+                vim.lsp.buf.document_highlight()
+              end
+            end,
           })
 
           vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
@@ -128,11 +146,60 @@ return {
         -- code, if the language server you are using supports them
         --
         -- This may be unwanted, since they displace some of your code
-        if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-          map('<leader>th', function()
-            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
-          end, '[T]oggle inlay [H]ints')
-        end
+        -- if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+        --   map('<leader>th', function()
+        --     vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
+        --   end, '[T]oggle inlay [H]ints')
+        -- end
+      end,
+    })
+
+    -- NOTE: language specific configuration
+    vim.api.nvim_create_autocmd('LspAttach', {
+      group = vim.api.nvim_create_augroup('kickstart-lsp-attach_rust', { clear = true }),
+      callback = function(event)
+        local bufnr = vim.api.nvim_get_current_buf()
+        -- vim.keymap.set('n', '<leader>ca', function()
+        --   -- vim.cmd.RustLsp 'codeAction' -- supports rust-analyzer's grouping
+        --   -- or vim.lsp.buf.codeAction() if you don't want grouping.
+        --   vim.lsp.buf.code_action()
+        -- end, { remap = true, silent = true, buffer = bufnr })
+        vim.keymap.set(
+          'n',
+          'K', -- Override Neovim's built-in hover keymap with rustaceanvim's hover actions
+          function()
+            vim.cmd.RustLsp { 'hover', 'actions' }
+          end,
+          { silent = true, buffer = bufnr }
+        )
+
+        vim.keymap.set('n', '<leader>cde', function()
+          vim.cmd.RustLsp 'explainError'
+        end, { silent = true, buffer = bufnr, desc = '[C]ode [D]etailed [E]xplanation [Rust]' })
+
+        vim.keymap.set('n', '<leader>cj', function()
+          vim.cmd.RustLsp 'relatedDiagnostics'
+        end, { silent = true, buffer = bufnr, desc = '[C]ode [J]ump to related diagnostics [Rust]' })
+
+        vim.keymap.set('n', '<leader>cdc', function()
+          vim.cmd.RustLsp 'openDocs'
+        end, { silent = true, buffer = bufnr, desc = '[C]ode [D]o[C]umentation [Rust]' })
+
+        vim.keymap.set('n', '<leader>cc', function()
+          vim.cmd.RustLsp { 'renderDiagnostic', 'cycle' }
+        end, { silent = true, buffer = bufnr, desc = '[C]ycle diagnostics [Rust]' })
+
+        vim.keymap.set('n', '<leader>cr', function()
+          vim.cmd.RustLsp { 'renderDiagnostic' }
+        end, { silent = true, buffer = bufnr, desc = '[R]ender current diagnostics [Rust]' })
+        vim.keymap.set('n', '<leader>nq', ':w<cr>:tabnew<cr>:term<cr>ar<cr><C-\\><C-n>:q<cr>',
+          { desc = 'rust run headless without terminal' })
+
+        local open_if_not = '<C-\\><C-n><C-w>h<C-w>o:w<cr>:ToggleTerm<cr>a<cr>'
+        vim.keymap.set('n', '<leader>nc', open_if_not .. 'cargo build<cr><C-\\><C-n>', { desc = 'rust compile' })
+        vim.keymap.set('n', '<leader>nr', open_if_not .. 'cargo run<cr><C-\\><C-n>', { desc = 'rust run' })
+        vim.keymap.set('n', '<leader>nt', open_if_not .. 'cargo test<cr><C-\\><C-n>', { desc = 'rust test' })
+        vim.keymap.set('n', '<leader>nb', open_if_not .. 'cargo bench<cr><C-\\><C-n>', { desc = 'rust bench' })
       end,
     })
 

@@ -178,20 +178,21 @@ return {
     end
 
     -- Calculate padding for centering the greeting
-    local logoWidth = logo:find '\n' - 1 -- Assuming the logo width is the width of the first line
-    local greetingWidth = #greeting
-    local padding = math.floor((logoWidth - greetingWidth) / 2)
+    local logoWidth                   = logo:find '\n' - 1 -- Assuming the logo width is the width of the first line
+    local greetingWidth               = #greeting
+    local padding                     = math.floor((logoWidth - greetingWidth) / 2)
 
     -- Generate spaces for padding
-    local paddedGreeting = string.rep(' ', padding) .. greeting
+    local paddedGreeting              = string.rep(' ', padding) .. greeting
 
     -- Add margin lines below the padded greeting
-    local margin = string.rep('\n', marginBottom)
+    local margin                      = string.rep('\n', marginBottom)
 
     -- Concatenate logo, padded greeting, and margin
-    local adjustedLogo = logo .. '\n' .. paddedGreeting .. margin
+    local adjustedLogo                = logo .. '\n' .. paddedGreeting .. margin
 
-    dashboard.section.buttons.val = {
+    local init_path                   = vim.fn.stdpath('config')
+    dashboard.section.buttons.val     = {
       dashboard.button('n', '  New file', ':ene <BAR> startinsert<CR>'),
       dashboard.button('r', '󰄉  Recent files', ':Telescope recent_files<CR>'),
       dashboard.button('u', '󱐥  Update plugins', '<cmd>Lazy update<CR>'),
@@ -199,7 +200,7 @@ return {
         ':cd C: | silent Telescope find_files hidden=true no_ignore=true <CR>'),
       dashboard.button('d', '󰮗  Find file in D:',
         ':cd D: | silent Telescope find_files hidden=true no_ignore=true <CR>'),
-      dashboard.button('s', '  Settings', ':e init.lua<CR>'),
+      dashboard.button('s', '  Settings', ':cd ' .. init_path .. '<CR>:e init.lua<CR>'),
       dashboard.button('q', '󰿅  Quit', '<cmd>qa<CR>'),
       -- dashboard.button('', ''),
     }
@@ -233,9 +234,9 @@ return {
       group = group,
       pattern = 'AlphaReady',
       callback = function()
-        vim.opt.showtabline = 0
-        vim.opt.showmode = false
-        vim.opt.laststatus = 0
+        -- vim.opt.showtabline = 0
+        -- vim.opt.showmode = true
+        -- vim.opt.laststatus = 3
         vim.opt.showcmd = false
         vim.opt.ruler = false
       end,
@@ -245,9 +246,9 @@ return {
       group = group,
       pattern = '<buffer>',
       callback = function()
-        vim.opt.showtabline = 0
-        vim.opt.showmode = true
-        vim.opt.laststatus = 3
+        -- vim.opt.showtabline = 0
+        -- vim.opt.showmode = true
+        -- vim.opt.laststatus = 3
         vim.opt.showcmd = true
         vim.opt.ruler = true
       end,

@@ -1,6 +1,6 @@
 return {
   "folke/flash.nvim",
-  event = "BufReadPost",
+  event = 'VeryLazy',
   config = function(_, opts)
     vim.api.nvim_set_hl(0, 'FlashLabel', { undercurl = false, fg = '#1c1c1c', bg = '#c9a554', sp = '#fd9720' })
     require("flash").setup(opts)

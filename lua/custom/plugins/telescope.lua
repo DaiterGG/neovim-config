@@ -180,8 +180,8 @@ return {
       builtin.find_files { cwd = vim.fn.stdpath 'config' }
     end, { desc = '[S]earch [N]eovim files' })
 
-    vim.keymap.set('n', '<leader>uc', function()
+    vim.keymap.set('n', '<leader>cs', function()
       builtin.colorscheme { enable_preview = true }
-    end, { desc = '[U]I [C]olorScheme' })
+    end, { desc = '[C]olor [S]cheme' })
   end,
 }

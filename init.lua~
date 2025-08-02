@@ -1,93 +1,12 @@
--- NOTE: Open nvim in new tab of existing nvim instance instead of opening new window
-local pipe_name = "\\\\.\\pipe\\nvim-server-" .. (vim.env.USERNAME or "default")
-
--- Check if we're the main instance
-local function is_main_instance()
-  local status, _ = pcall(vim.fn.serverstart, pipe_name)
-  return status
+-- Auto-start server if not running
+if vim.fn.serverlist() == "" then
+  vim.fn.serverstart("\\\\.\\pipe\\nvim-server-" .. vim.env.USERNAME)
 end
-
--- Client mode: Send files to server via RPC
-local function client_mode(no_args)
-  -- Try to connect to server
-  local status, channel = pcall(vim.fn.sockconnect, "pipe", pipe_name, { rpc = true })
-  if not status then
-    vim.notify("Failed to connect to server: " .. pipe_name, vim.log.levels.ERROR)
-    return
-  end
-
-  if no_args then
-    vim.rpcnotify(channel, "nvim_exec", "tabnew", false)
-    vim.rpcnotify(channel, "nvim_exec", "Alpha", false)
-  else
-    -- Send files via RPC
-    for i = 0, vim.fn.argc() - 1 do
-      local file = vim.fn.argv(i)
-      local escaped_file = vim.fn.fnameescape(file)
-
-      -- Use nvim_exec to run commands in the server instance
-      vim.rpcnotify(channel, "nvim_exec", "tabedit " .. escaped_file, false)
-
-      -- work only with delay
-      if i < vim.fn.argc() - 1 then
-        vim.wait(50)
-      end
-    end
-  end
-
-  -- Close client instance
-  vim.schedule(function()
-    vim.cmd("qall!")
-  end)
-end
-
--- Main instance setup
-local function main_instance()
-  -- NOTE: Close the server manually, to open nvim in a separate window
-  vim.api.nvim_create_user_command("ServerStop", function()
-    pcall(vim.fn.serverstop, pipe_name)
-
-    vim.notify("Server Stopped, run :ServerStart to start again")
-
-    vim.api.nvim_create_user_command("ServerStart", function()
-      if is_main_instance() then
-        vim.notify("Server Started Again")
-      end
-    end, {})
-  end, {})
-
-  -- Auto-close server when last window closes
-  vim.api.nvim_create_autocmd("QuitPre", {
-    callback = function()
-      if #vim.api.nvim_list_tabpages() <= 1 then
-        pcall(vim.fn.serverstop, pipe_name)
-      end
-    end
-  })
-
-  -- Focus the window when new files are added
-  vim.api.nvim_create_autocmd("UIEnter", {
-    callback = function()
-      vim.cmd("checktime")
-    end
-  })
-end
-
--- Execution flow
-if is_main_instance() then
-  main_instance()
-elseif vim.fn.argc() > 0 then
-  client_mode(false)
-else
-  client_mode(true)
-end
-
 -- neovim-tree requires this
 --
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.swapfile = false
-
 -- Set <space> as the leader key
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
@@ -108,8 +27,6 @@ vim.g.equalalways = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 vim.opt.relativenumber = false
-
-vim.opt.showtabline = 0
 
 vim.api.nvim_create_autocmd('UIEnter', {
   callback = function()
@@ -365,37 +282,8 @@ require('lazy').setup({
   {
     'smartpde/telescope-recent-files',
     event = 'VeryLazy',
-    opts = {
-      only_cwd = true,
-    }
   },
-  {
-    'LukasPietzschmann/telescope-tabs',
-    event = 'VeryLazy',
-    config = function()
-      require('telescope').load_extension 'telescope-tabs'
-      require('telescope-tabs').setup {
-        entry_formatter = function(tab_id, buffer_ids, file_names, file_paths, is_current)
-          local entry_string = table.concat(file_names, ', ')
-          return string.format('%s%d: %s', is_current and '! ' or '  ', tab_id, entry_string)
-        end,
-        -- entry_ordinal = function(tab_id, buffer_ids, file_names, file_paths, is_current)
-        --   local entry_string = table.concat(file_names, ', ')
-        --   if entry_string == 'init.lua' then return '0' end
-        --   return "9"
-        -- end,
-        -- entry_ordinal        = function(tab_id, buffer_ids, file_names, file_paths, is_current)
-        --   local base_ordinal = table.concat(file_names, ' ')
-        --   return is_current and ("0" .. base_ordinal) or base_ordinal
-        -- end,
-        -- close_tab_shortcut_n = '<None>', -- if you're in normal mode
-      }
-      vk.set('n', '<leader>u', function()
-        require('telescope-tabs').list_tabs()
-      end)
-    end,
-    dependencies = { 'nvim-telescope/telescope.nvim' },
-  },
+
   --FOLD UFO
   {
     'kevinhwang91/nvim-ufo',
@@ -635,38 +523,38 @@ require('lazy').setup({
 
 
 
-  -- {
-  --   "sphamba/smear-cursor.nvim",
-  --   event = 'VeryLazy',
-  --   opts = {
-  --     -- Smear cursor when switching buffers or windows.
-  --     smear_between_buffers = true,
+  {
+    "sphamba/smear-cursor.nvim",
+    event = 'VeryLazy',
+    opts = {
+      -- Smear cursor when switching buffers or windows.
+      smear_between_buffers = true,
 
-  --     -- Smear cursor when moving within line or to neighbor lines.
-  --     -- Use `min_horizontal_distance_smear` and `min_vertical_distance_smear` for finer control
-  --     smear_between_neighbor_lines = false,
+      -- Smear cursor when moving within line or to neighbor lines.
+      -- Use `min_horizontal_distance_smear` and `min_vertical_distance_smear` for finer control
+      smear_between_neighbor_lines = false,
 
-  --     -- Draw the smear in buffer space instead of screen space when scrolling
-  --     scroll_buffer_space = false,
+      -- Draw the smear in buffer space instead of screen space when scrolling
+      scroll_buffer_space = false,
 
-  --     -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
-  --     -- Smears will blend better on all backgrounds.
-  --     legacy_computing_symbols_support = false,
+      -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
+      -- Smears will blend better on all backgrounds.
+      legacy_computing_symbols_support = false,
 
-  --     cursor_color = "#d7c483",
-  --     -- Smear cursor in insert mode.
-  --     -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
-  --     smear_insert_mode = false,
+      cursor_color = "#d7c483",
+      -- Smear cursor in insert mode.
+      -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
+      smear_insert_mode = false,
 
-  --     stiffness = 0.95,                     -- 0.6      [0, 1]
-  --     trailing_stiffness = 0.6,             -- 0.4      [0, 1]
-  --     stiffness_insert_mode = 0.7,          -- 0.5      [0, 1]
-  --     trailing_stiffness_insert_mode = 0.7, -- 0.5      [0, 1]
-  --     damping = 0.95,                       -- 0.65     [0, 1]
-  --     damping_insert_mode = 0.8,            -- 0.7      [0, 1]
-  --     distance_stop_animating = 0.1,        -- 0.1      > 0
-  --   },
-  -- },
+      stiffness = 0.95,                     -- 0.6      [0, 1]
+      trailing_stiffness = 0.6,             -- 0.4      [0, 1]
+      stiffness_insert_mode = 0.7,          -- 0.5      [0, 1]
+      trailing_stiffness_insert_mode = 0.7, -- 0.5      [0, 1]
+      damping = 0.95,                       -- 0.65     [0, 1]
+      damping_insert_mode = 0.8,            -- 0.7      [0, 1]
+      distance_stop_animating = 0.1,        -- 0.1      > 0
+    },
+  },
 
   -- New plugins go here
   --
@@ -782,7 +670,7 @@ vk.set({ 'o' }, '<C-c>', '<Esc>:noh<cr>', opts)
 
 vk.set('n', '<CR>', 'A<CR><Esc>', opts)
 
--- vk.set('n', 'ga', 'gi', { desc = 'Go to last inserted text' })
+vk.set('n', 'ga', 'gi', { remap = true, desc = 'Go to last inserted text' })
 
 -- Diagnostic keymaps
 vk.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -797,6 +685,8 @@ vk.set('n', '<a-.>', '<C-w><lt>', opts)
 vk.set('n', '<a-+>', '<C-w>+')
 vk.set('n', '<a-->', '<C-w>-')
 
+-- tabs
+vk.set('n', '<leader><tab>', ':tabnext<CR>', { desc = 'Next tab' })
 
 -- my old open terminal command
 -- vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[N]ew [T]erminal tile' })
@@ -886,14 +776,20 @@ dir_config.directory_autocmd('LOVE', function()
 end)
 
 -- Startup
-vim.g.set_cur_dir = function()
-  vim.cmd('cd ' .. vim.fn.stdpath('config'))
-end
 dir_config.directory_autocmd('WindowsApps', function()
-  vim.g.set_cur_dir()
+  vim.cmd('cd ' .. vim.fn.stdpath('state'))
+  vim.cmd('cd ..')
+  vim.cmd('cd nvim')
+end)
+dir_config.directory_autocmd('Neovim\\bin', function()
+  vim.cmd('cd ' .. vim.fn.stdpath('state'))
+  vim.cmd('cd ..')
+  vim.cmd('cd nvim')
 end)
 dir_config.directory_autocmd('system32', function()
-  vim.g.set_cur_dir()
+  vim.cmd('cd ' .. vim.fn.stdpath('state'))
+  vim.cmd('cd ..')
+  vim.cmd('cd nvim')
 end)
 
 -- NOTE: Tab settings

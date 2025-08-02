@@ -1,5 +1,6 @@
 return {
   'uga-rosa/ccc.nvim',
+  event = 'VeryLazy',
   config = function()
     local ccc     = require('ccc')
     local mapping = ccc.mapping

@@ -1,21 +1,26 @@
 return { -- Autoformat
   'stevearc/conform.nvim',
-  event = { 'BufWritePre' },
+  event = 'BufReadPost',
   config = function()
+    -- toggle autoformat
+    local FormatOnSaveIsOn = true
+    local desc = '[T]oggle [F]ormat On Save'
+    ToggleFormatF = function()
+      vim.keymap.set('n', '<leader>tf', function()
+        FormatOnSaveIsOn = not FormatOnSaveIsOn
+        ToggleFormatF()
+      end, { noremap = true, silent = true, desc = (FormatOnSaveIsOn and '[ON] ' or '[OFF] ') .. desc })
+    end
+    ToggleFormatF()
+
     --Auto formatting
     vim.api.nvim_create_autocmd('BufWritePre', {
       callback = function()
-        local toggle_format = true
-        -- toggle autoformat
-        vim.keymap.set('n', '<leader>tf', function()
-          toggle_format = not toggle_format
-        end, { noremap = true, silent = true, desc = '[T]oggle [F]ormat On Save' })
-
         -- Manual formating
         vim.keymap.set('n', '<leader>f', function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end, { noremap = true, silent = true, desc = '[F]ormat Document' })
-        if toggle_format then
+        if FormatOnSaveIsOn then
           require('conform').format { async = false, lsp_format = 'fallback' }
         end
       end,

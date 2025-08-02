@@ -3,7 +3,7 @@
 -- for cd C:/Programs/FolderName/subfolder/
 -- init.lua:
 --   local dir_config = require 'autodir'
---   dir_config.setup_directory_config('FolderName', function()
+-- dir_config.directory_autocmd('FolderName', function()
 --     ...
 --   }
 
@@ -11,39 +11,24 @@ local M = {}
 -- Table to store directory configurations
 local directory_configs = {}
 
--- Check if current directory contains target directory in its path
-local function is_in_directory(target_dir)
-  -- local cwd = vim.fn.getcwd():gsub('\\', '/') -- Normalize path for Windows
-  -- local parts = vim.split(cwd, '/')
-  -- for _, part in ipairs(parts) do
-  --   if part == target_dir then
-  --     return true
-  --   end
-  -- end
-  -- return false
-
-  -- Make it any matching part
-  return vim.fn.getcwd():find(target_dir) ~= nil
-end
-
 -- Execute registered functions for matching directories
 local function check_directory_configs()
   for _, config in ipairs(directory_configs) do
-    if is_in_directory(config.dir) then
+    if vim.fn.getcwd():find(config.dir) ~= nil then
       config.func()
     end
   end
 end
 
 -- Setup function to register directory configurations
-function M.setup_directory_config(dir, func)
+function M.directory_autocmd(dir, func)
   table.insert(directory_configs, {
     dir = dir,
     func = func,
   })
 
   -- Immediately check if we're already in the target directory
-  if is_in_directory(dir) then
+  if vim.fn.getcwd():find(dir) ~= nil then
     func()
   end
 end

@@ -4,20 +4,20 @@ return
   'nvim-treesitter/nvim-treesitter',
   build = ':TSUpdate',
   main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-  event = 'BufReadPost',
+  event = 'VeryLazy',
   config = function()
     -- require('nvim-treesitter.install').compilers = { 'cc', 'gcc', 'clang', 'cl', 'zig' }
     require('nvim-treesitter.install').compilers = { 'cl', 'zig' }
     require('nvim-treesitter.install').prefer_git = false
 
-    vim.keymap.set('n', 'gi', function() end, {})
-    vim.keymap.del('n', 'gi')
+    vim.keymap.set('n', 'ga', function() end, {})
+    vim.keymap.del('n', 'ga')
     require 'nvim-treesitter.configs'.setup {
       incremental_selection = {
         enable = true,
         keymaps = {
-          init_selection = "gi",
-          node_incremental = "gi",
+          init_selection = "ga",
+          node_incremental = "ga",
           scope_incremental = "gqqqq",
           node_decremental = "gs",
         },

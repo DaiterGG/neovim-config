@@ -1,19 +1,34 @@
 return {
   'nvim-tree/nvim-tree.lua',
   version = '*',
-  event = 'BufReadPost',
+  event = 'VeryLazy',
   cmd = 'NvimTreeToggle',
   dependencies = {
     'nvim-tree/nvim-web-devicons',
   },
   config = function()
+    NvimTreeWasUsed = false
     vim.keymap.set('n', '<leader>te', function()
       local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
       vim.cmd('' .. pwd)
+      NvimTreeWasUsed = true
     end, { desc = '[T]oggle [E]xplorer', noremap = true, silent = true })
+    vim.api.nvim_create_autocmd('DirChanged', {
+      callback = function()
+        if NvimTreeWasUsed then
+          local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
+          vim.cmd('' .. pwd)
+          vim.cmd('' .. pwd)
+        end
+      end
+    })
+
 
 
     require('nvim-tree').setup {
+      git = {
+        enable = true
+      },
       help = {
         sort_by = 'desc',
       },
@@ -25,7 +40,7 @@ return {
         group_empty = true,
       },
       filters = {
-        dotfiles = true,
+        dotfiles = false,
       },
       on_attach = function(bufnr)
         local function opts(desc)

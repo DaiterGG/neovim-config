@@ -251,6 +251,16 @@ return {
     -- active right section
     active_right {
       function()
+        local tab_count = vim.fn.tabpagenr('$')
+        return (tab_count == 1) and "" or ('tabs: ' .. tab_count)
+      end,
+      icon = '󰓪',
+      color = { bg = colors.green_bright, fg = colors.black },
+      padding = { left = 1, right = 1 },
+      separator = { right = '▓▒░', left = '░▒▓' },
+    }
+    active_right {
+      function()
         local res = 'llm on:'
         local some = require('codeium.virtual_text').status_string()
         if some == ' 0 ' then
@@ -266,9 +276,6 @@ return {
       icon = '',
       color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 1 },
-      cond = function()
-        return true
-      end,
       separator = { right = '▓▒░', left = '░▒▓' },
     }
 

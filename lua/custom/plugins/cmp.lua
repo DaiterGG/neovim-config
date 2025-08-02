@@ -44,6 +44,7 @@ return { -- Autocompletion
       AutoEnable = not AutoEnable
     end, { desc = '[T]oggle [A]utocompletion' })
 
+    vim.api.nvim_set_hl(0, 'SnippetTabstop', {})
 
     -- See `:help cmp`
     local cmp = require 'cmp'
