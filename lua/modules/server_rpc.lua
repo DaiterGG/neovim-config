@@ -64,12 +64,6 @@ local function main_instance()
     end
   })
 
-  vim.api.nvim_create_autocmd("TabNew", {
-    callback = function()
-      vim.cmd 'cd %:p:h'
-      vim.cmd 'cd'
-    end,
-  })
   -- Focus the window when new files are added
   -- half works if you have multiple tabs in your terminal manager
   vim.api.nvim_create_autocmd("UIEnter", {

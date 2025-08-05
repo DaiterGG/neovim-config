@@ -628,5 +628,5 @@ vim.api.nvim_create_autocmd('FileType', {
 vim.api.nvim_set_hl(0, 'MatchParen',
   { underline = true, underdouble = true, undercurl = false, fg = '#bb7744', sp = '#bb7744' })
 
--- vim.cmd 'cd %:p:h'
--- vim.cmd 'cd'
+vim.cmd 'cd %:p:h'
+vim.cmd 'cd'

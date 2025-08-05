@@ -1,5 +1,5 @@
 local vk = vim.keymap
--- NOTE: Debugg keymap
+-- NOTE: Debug keymap
 vk.set({ 'i', 'n' }, '<f10>', function()
     vim.show_pos()
   end,

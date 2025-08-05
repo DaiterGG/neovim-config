@@ -2,33 +2,42 @@
 TabLastSelect = {}
 TabCwd = {}
 
-vim.cmd 'cd %:p:h'
+local cmd = vim.api.nvim_create_autocmd
+vim.cmd 'silent cd %:p:h'
 TabCwd[vim.api.nvim_get_current_tabpage()] = vim.fn.getcwd()
 
 -- track cwd
-vim.api.nvim_create_autocmd("DirChanged", {
+cmd("DirChanged", {
   callback = function()
     TabCwd[vim.api.nvim_get_current_tabpage()] = vim.fn.getcwd()
   end
 })
 -- set cwd on new tab
-vim.api.nvim_create_autocmd("TabNewEntered", {
+cmd("TabNewEntered", {
   callback = function()
-    vim.cmd('cd %:p:h')
+    vim.cmd('silent cd %:p:h')
     TabCwd[vim.api.nvim_get_current_tabpage()] = vim.fn.getcwd()
-    vim.notify(vim.fn.getcwd())
-  end,
-})
--- change cwd on tab change
-vim.api.nvim_create_autocmd("TabEnter", {
-  callback = function()
-    vim.cmd('cd ' .. (TabCwd[vim.api.nvim_get_current_tabpage()] or ''))
-    vim.notify(vim.fn.getcwd())
   end,
 })
 
+JustEnteredTab = false
+-- change cwd on tab change
+cmd("TabEnter", {
+  callback = function()
+    JustEnteredTab = true
+  end,
+})
+cmd("BufEnter", {
+  callback = function()
+    if JustEnteredTab then
+      local tabcwd = TabCwd[vim.api.nvim_get_current_tabpage()]
+      vim.cmd(tabcwd and ('silent cd ' .. tabcwd) or '')
+      JustEnteredTab = false
+    end
+  end,
+})
 -- track tab selection time
-vim.api.nvim_create_autocmd("TabEnter", {
+cmd("TabEnter", {
   callback = function()
     local tab_id = vim.api.nvim_get_current_tabpage()
     TabLastSelect[tab_id] = vim.loop.now()

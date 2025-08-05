@@ -49,8 +49,7 @@ return {
     }
 
     WindIsOn = false
-    vim.cmd 'Codeium Toggle'
-    vim.cmd 'cd'
+    vim.cmd 'silent Codeium Toggle'
 
     vim.keymap.set('n', '<leader>tw', function()
       WindIsOn = not WindIsOn
