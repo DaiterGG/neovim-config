@@ -83,7 +83,7 @@ return {
         -- vim.keymap.set('n', '[e', api.node.navigate.diagnostics.prev, opts 'Prev Diagnostic')
         vim.keymap.set('n', leader .. 'F', api.live_filter.clear, opts 'Live Filter: Clear')
         vim.keymap.set('n', leader .. 'f', api.live_filter.start, opts 'Live Filter: Start')
-        vim.keymap.set('n', leader .. '<leader>?', api.tree.toggle_help, opts 'Help')
+        vim.keymap.set('n', leader .. '?', api.tree.toggle_help, opts 'Help')
         vim.keymap.set('n', leader .. 'gy', api.fs.copy.absolute_path, opts 'Copy Absolute Path')
         vim.keymap.set('n', leader .. 'ge', api.fs.copy.basename, opts 'Copy Basename')
         -- vim.keymap.set('n', 'H', api.tree.toggle_hidden_filter, opts 'Toggle Filter: Dotfiles')

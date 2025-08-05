@@ -1,86 +1,4 @@
--- NOTE: Open nvim in new tab of existing nvim instance instead of opening new window
-local pipe_name = "\\\\.\\pipe\\nvim-server-" .. (vim.env.USERNAME or "default")
-
--- Check if we're the main instance
-local function is_main_instance()
-  local status, _ = pcall(vim.fn.serverstart, pipe_name)
-  return status
-end
-
--- Client mode: Send files to server via RPC
-local function client_mode(no_args)
-  -- Try to connect to server
-  local status, channel = pcall(vim.fn.sockconnect, "pipe", pipe_name, { rpc = true })
-  if not status then
-    vim.notify("Failed to connect to server: " .. pipe_name, vim.log.levels.ERROR)
-    return
-  end
-
-  if no_args then
-    vim.rpcnotify(channel, "nvim_exec", "tabnew", false)
-    vim.rpcnotify(channel, "nvim_exec", "Alpha", false)
-  else
-    -- Send files via RPC
-    for i = 0, vim.fn.argc() - 1 do
-      local file = vim.fn.argv(i)
-      local escaped_file = vim.fn.fnameescape(file)
-
-      -- Use nvim_exec to run commands in the server instance
-      vim.rpcnotify(channel, "nvim_exec", "tabedit " .. escaped_file, false)
-
-      -- work only with delay
-      if i < vim.fn.argc() - 1 then
-        vim.wait(50)
-      end
-    end
-  end
-
-  -- Close client instance
-  vim.schedule(function()
-    vim.cmd("qall!")
-  end)
-end
-
--- Main instance setup
-local function main_instance()
-  -- NOTE: Close the server manually, to open nvim in a separate window
-  vim.api.nvim_create_user_command("ServerStop", function()
-    pcall(vim.fn.serverstop, pipe_name)
-
-    vim.notify("Server Stopped, run :ServerStart to start again")
-
-    vim.api.nvim_create_user_command("ServerStart", function()
-      if is_main_instance() then
-        vim.notify("Server Started Again")
-      end
-    end, {})
-  end, {})
-
-  -- Auto-close server when last window closes
-  vim.api.nvim_create_autocmd("QuitPre", {
-    callback = function()
-      if #vim.api.nvim_list_tabpages() <= 1 then
-        pcall(vim.fn.serverstop, pipe_name)
-      end
-    end
-  })
-
-  -- Focus the window when new files are added
-  vim.api.nvim_create_autocmd("UIEnter", {
-    callback = function()
-      vim.cmd("checktime")
-    end
-  })
-end
-
--- Execution flow
-if is_main_instance() then
-  main_instance()
-elseif vim.fn.argc() > 0 then
-  client_mode(false)
-else
-  client_mode(true)
-end
+require('modules.server_rpc')
 
 -- neovim-tree requires this
 --
@@ -134,7 +52,7 @@ vim.opt.showmode = false
 vim.schedule(function()
   vim.opt.clipboard = 'unnamed'
 end)
-local opts = { noremap = true, silent = true }
+local vkopt = { noremap = true, silent = true }
 local vk = vim.keymap
 
 -- Enable break indent
@@ -245,9 +163,6 @@ require('lazy').setup({
   -- NOTE: Disabled for now (bad detections)
   --'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
-  -- Use `opts = {}` to force a plugin to be loaded.
-  --
-
   -- {
   --   'tris203/rzls.nvim',
   --   -- opts = {
@@ -332,9 +247,9 @@ require('lazy').setup({
   -- LSP Plugins
   { 'Bilal2453/luvit-meta',   lazy = true },
 
+  require 'kickstart.plugins.debug',
 
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.neo-tree',
@@ -368,33 +283,6 @@ require('lazy').setup({
     opts = {
       only_cwd = true,
     }
-  },
-  {
-    'LukasPietzschmann/telescope-tabs',
-    event = 'VeryLazy',
-    config = function()
-      require('telescope').load_extension 'telescope-tabs'
-      require('telescope-tabs').setup {
-        entry_formatter = function(tab_id, buffer_ids, file_names, file_paths, is_current)
-          local entry_string = table.concat(file_names, ', ')
-          return string.format('%s%d: %s', is_current and '! ' or '  ', tab_id, entry_string)
-        end,
-        -- entry_ordinal = function(tab_id, buffer_ids, file_names, file_paths, is_current)
-        --   local entry_string = table.concat(file_names, ', ')
-        --   if entry_string == 'init.lua' then return '0' end
-        --   return "9"
-        -- end,
-        -- entry_ordinal        = function(tab_id, buffer_ids, file_names, file_paths, is_current)
-        --   local base_ordinal = table.concat(file_names, ' ')
-        --   return is_current and ("0" .. base_ordinal) or base_ordinal
-        -- end,
-        -- close_tab_shortcut_n = '<None>', -- if you're in normal mode
-      }
-      vk.set('n', '<leader>u', function()
-        require('telescope-tabs').list_tabs()
-      end)
-    end,
-    dependencies = { 'nvim-telescope/telescope.nvim' },
   },
   --FOLD UFO
   {
@@ -531,8 +419,8 @@ require('lazy').setup({
   {
     'danymat/neogen',
     event = 'VeryLazy',
-    config = function()
-      require('neogen').setup()
+    config = function(_, opts)
+      require('neogen').setup(opts)
       vk.set('n', '<Leader>a', ":lua require('neogen').generate()<CR>", { desc = 'generate comments' })
     end,
     -- Uncomment next line if you want to follow only stable versions
@@ -559,22 +447,22 @@ require('lazy').setup({
     version = '^6', -- Recommended
     lazy = false,   -- This plugin is already lazy
 
-    -- -- debugger setup
-    -- config = function()
-    --   local mason_reg = require 'mason-registry'
-    --   local codelldb = mason_reg.get_package 'codelldb'
-    --   local extension_path = codelldb:get_install_path() .. '/extension/'
-    --   local codelldb_path = extension_path .. 'adapter/codelldb'
-    --   local liblldb_path = extension_path .. 'lldb/lib/liblldb.dylib'
-    --   local cfg = require 'rustaceanvim.config'
+    -- debugger setup
+    --   config = function()
+    --     local mason_reg = require 'mason-registry'
+    --     local codelldb = mason_reg.get_package 'codelldb'
+    --     local extension_path = codelldb:get_install_handle() .. '/extension/'
+    --     local codelldb_path = extension_path .. 'adapter/codelldb'
+    --     local liblldb_path = extension_path .. 'lldb/lib/liblldb.dylib'
+    --     local cfg = require 'rustaceanvim.config'
 
-    --   -- vim.g.rustaceanvim = {
-    --   --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path) },
-    --   -- }
-    --   -- vim.g.rustaceanvim = {
-    --   --   dap = { adapter = cfg.get_codelldb_adapter(codelldb_path) },
-    --   -- }
-    -- end,
+    --     vim.g.rustaceanvim = {
+    --       dap = { adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path) },
+    --     }
+    --     vim.g.rustaceanvim = {
+    --       dap = { adapter = cfg.get_codelldb_adapter(codelldb_path) },
+    --     }
+    --   end,
   },
   -- NOTE: debugger setup (there is a default config in kickstarter)
   -- {
@@ -596,10 +484,6 @@ require('lazy').setup({
   --       dapui.close()
   --     end
 
-  --     -- add yours here
-
-  --     local map = vim.keymap.set
-
   --     -- map('i', 'jk', '<ESC>')
 
   --     -- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
@@ -620,53 +504,56 @@ require('lazy').setup({
   --     map('n', '<Leader>dl', "<cmd>lua require'dap'.run_last()<CR>", { desc = 'Debugger run last' })
   --   end,
   -- },
-  --
+  --return {
   -- {
-  --   'rcarriga/nvim-dap-ui',
-  --   event = 'BufReadPost',
-  --   dependencies = { 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio' },
-  --   config = function()
-  --     require('dapui').setup()
-  --   end,
+  --   "igorlfs/nvim-dap-view",
+  --   -- dependencies = { "mfussenegger/nvim-dap" },
+  --   ---@module 'dap-view'
+  --   ---@type dapview.Config
+  --   opts = {},
   -- },
 
   -- nodejs
   -- { 'neoclide/coc.nvim', branch = 'release' },
 
+  {
+    "sphamba/smear-cursor.nvim",
+    event = 'VeryLazy',
+    opts = {
+      -- Smear cursor when switching buffers or windows.
+      smear_between_buffers = true,
 
+      -- Smear cursor when moving within line or to neighbor lines.
+      -- Use `min_horizontal_distance_smear` and `min_vertical_distance_smear` for finer control
+      smear_between_neighbor_lines = false,
 
-  -- {
-  --   "sphamba/smear-cursor.nvim",
-  --   event = 'VeryLazy',
-  --   opts = {
-  --     -- Smear cursor when switching buffers or windows.
-  --     smear_between_buffers = true,
+      -- Draw the smear in buffer space instead of screen space when scrolling
+      scroll_buffer_space = false,
 
-  --     -- Smear cursor when moving within line or to neighbor lines.
-  --     -- Use `min_horizontal_distance_smear` and `min_vertical_distance_smear` for finer control
-  --     smear_between_neighbor_lines = false,
+      -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
+      -- Smears will blend better on all backgrounds.
+      legacy_computing_symbols_support = false,
 
-  --     -- Draw the smear in buffer space instead of screen space when scrolling
-  --     scroll_buffer_space = false,
+      cursor_color = "#d7c483",
+      -- Smear cursor in insert mode.
+      -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
+      smear_insert_mode = false,
 
-  --     -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
-  --     -- Smears will blend better on all backgrounds.
-  --     legacy_computing_symbols_support = false,
-
-  --     cursor_color = "#d7c483",
-  --     -- Smear cursor in insert mode.
-  --     -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
-  --     smear_insert_mode = false,
-
-  --     stiffness = 0.95,                     -- 0.6      [0, 1]
-  --     trailing_stiffness = 0.6,             -- 0.4      [0, 1]
-  --     stiffness_insert_mode = 0.7,          -- 0.5      [0, 1]
-  --     trailing_stiffness_insert_mode = 0.7, -- 0.5      [0, 1]
-  --     damping = 0.95,                       -- 0.65     [0, 1]
-  --     damping_insert_mode = 0.8,            -- 0.7      [0, 1]
-  --     distance_stop_animating = 0.1,        -- 0.1      > 0
-  --   },
-  -- },
+      stiffness = 0.95,                     -- 0.6      [0, 1]
+      trailing_stiffness = 0.6,             -- 0.4      [0, 1]
+      stiffness_insert_mode = 0.7,          -- 0.5      [0, 1]
+      trailing_stiffness_insert_mode = 0.7, -- 0.5      [0, 1]
+      damping = 0.95,                       -- 0.65     [0, 1]
+      damping_insert_mode = 0.8,            -- 0.7      [0, 1]
+      distance_stop_animating = 0.1,        -- 0.1      > 0
+    },
+    config = function(_, opts)
+      require('smear_cursor').setup(opts)
+      vim.api.nvim_create_user_command('SmearCursorToggle', function()
+        require('smear_cursor').toggle()
+      end, {})
+    end,
+  },
 
   -- New plugins go here
   --
@@ -697,204 +584,9 @@ require('lazy').setup({
   },
 })
 
--- NOTE: Debugg keymap
-vk.set({ 'i', 'n' }, '<f10>', function()
-    vim.show_pos()
-  end,
-  {})
 
--- NOTE: Command mode keymap
-vk.set('c', '<C-n>', '<C-t><C-h>', { remap = true })
-vk.set('c', '<C-c>', '<Esc>', opts)
-
-vk.set('c', '<A-h>', '<down>', { noremap = false })
-vk.set('c', '<A-t>', '<up>', { noremap = false })
-vk.set('c', '<A-e>', '<left>', { noremap = false })
-vk.set('c', '<A-u>', '<right>', { noremap = false })
-
--- NOTE: Terminal mode keymap
-vk.set('t', '<C-c>', '<Esc>', opts)
-
-vk.set('t', '<Esc>', '<C-\\><C-n>', opts)
-
-vk.set('t', '<C-h>', '<Down>', { remap = true })
-vk.set('t', '<C-t>', '<Up>', { remap = true })
-vk.set('t', '<C-u>', '<Right>', { remap = true })
-vk.set('t', '<C-e>', '<Left>', { remap = true })
-vk.set('t', '<A-c>', '<C-c>', { remap = true })
-
-vk.set('t', '<A-e>', '<C-\\><C-n><C-w>h', { remap = true })
-vk.set('t', '<A-u>', '<C-\\><C-n><C-w>l', { remap = true })
-vk.set('t', '<A-h>', '<C-\\><C-n><C-w>j', { remap = true })
-vk.set('t', '<A-t>', '<C-\\><C-n><C-w>k', { remap = true })
-vk.set('t', '<A-,>', '<C-\\><C-n><C-w>>a', { remap = true })
-vk.set('t', '<A-.>', '<C-\\><C-n><C-w><lt>a', { remap = true })
-vk.set('t', '<A-+>', '<C-\\><C-n><C-w>+a', { remap = true })
-vk.set('t', '<A-->', '<C-\\><C-n><C-w>-a', { remap = true })
-
--- NOTE: Insert mode keymap
-vk.set('i', '<C-c>', '<Esc>', opts)
-
-vk.set('i', '<C-p>', '<C-r>"', opts)
-
-
-vk.set('i', '<A-w>', '<C-\\><C-n><cmd>w<CR>', { silent = true })
-
--- NOTE: Visual mode keymap
-vk.set('v', '<C-c>', '<Esc>', opts)
-
-vk.set('v', 'k', 't', opts)
-vk.set('v', 't', 'gk', opts) -- up
-
-vk.set('v', 'h', 'gj', opts) -- down
-vk.set('v', 'j', 'e', opts)
-vk.set('v', 'e', 'h', opts)  -- left
-
-vk.set('v', 'u', 'l', opts)  -- right
-vk.set('v', 'l', 'u', opts)
-vk.set('v', 'L', 'U', opts)
-
-vk.set('v', '<C-e>', '6h', opts)
-vk.set('v', '<C-u>', '6l', opts)
-
-vk.set('v', '<C-h>', '6gj', opts)
-vk.set('v', '<C-t>', '6gk', opts)
-
-vk.set('v', '$', '$h', opts)
-
--- MoveLine
--- now in mini.move
--- vk.set('v', 'H', ":m '>+1<CR>gv=gv", opts)
--- vk.set('v', 'T', ":m '<-2<CR>gv=gv", opts)
-
---Paste over
-vk.set('v', 'p', 'P', opts)
-vk.set('v', 'P', 'p', opts)
-
---Replace
-vk.set('v', '<C-r>', '"1y:%s/<C-r>1/<C-r>1/gc<Left><Left><Left>', { desc = 'Replace' })
-
--- vk.set('v', '<C-_>', 'y/<C-r>"<CR>', { remap = true })
--- NOTE: Normal mode keymap
---
-vk.set({ 'n' }, '<C-c>', '<Esc>:noh<cr>', opts)
-vk.set({ 'o' }, '<C-c>', '<Esc>:noh<cr>', opts)
-
-vk.set('n', '<CR>', 'A<CR><Esc>', opts)
-
--- vk.set('n', 'ga', 'gi', { desc = 'Go to last inserted text' })
-
--- Diagnostic keymaps
-vk.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-
--- split screen keymaps
-vk.set('n', '<a-e>', '<C-w>h')
-vk.set('n', '<a-u>', '<C-w>l')
-vk.set('n', '<a-h>', '<C-w>j')
-vk.set('n', '<a-t>', '<C-w>k')
-vk.set('n', '<a-,>', '<C-w>>', opts)
-vk.set('n', '<a-.>', '<C-w><lt>', opts)
-vk.set('n', '<a-+>', '<C-w>+')
-vk.set('n', '<a-->', '<C-w>-')
-
-
--- my old open terminal command
--- vk.set('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[N]ew [T]erminal tile' })
-
--- Quick save
-vk.set('n', '<A-w>', '<cmd>w<CR>', { silent = true })
-
-
--- Jump to previous locations
--- my right ctrl is in akward position on my laptop
-vk.set('n', '<C-d>', '<C-o>')
-vk.set('n', '<C-n>', '<C-i>')
-
--- Navigation rebind
-vk.set('n', 'k', 't', opts)
-vk.set('n', 't', 'gk', opts) -- up
-
-vk.set('n', 'h', 'gj', opts) -- down
-vk.set('n', 'j', 'e', opts)
-vk.set('n', 'e', 'h', opts)  -- left
-
-vk.set('n', 'u', 'l', opts)  -- right
-vk.set('n', 'l', 'u', opts)
-vk.set('n', 'L', 'U', opts)
-
-vk.set('n', '<C-e>', '6h', opts)
-vk.set('n', '<C-u>', '6l', opts)
-
-vk.set('n', '<C-h>', '6gj', opts)
-vk.set('n', '<C-t>', '6gk', opts)
-
--- MoveLine
--- vk.set('n', 'H', ':m .+1<CR>==', opts)
--- vk.set('n', 'T', ':m .-2<CR>==', opts)
-
--- toggle virtual text
-local desc = '[T]oggle [D]iagnostics virtual text'
-ToggleDiagnostic = function()
-  vk.set('n', '<leader>td', function()
-    vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
-    ToggleDiagnostic()
-  end, { noremap = true, silent = true, desc = (vim.diagnostic.config().virtual_text and "[ON] " or "[OFF] ") .. desc })
-end
-ToggleDiagnostic()
-
-vk.set('n', '<leader>ds', function()
-  local shada_dir = vim.fn.stdpath('state') .. '\\shada\\'
-
-  local del_cmds = {}
-  for c = 97, 122 do -- ASCII range for a-z
-    table.insert(del_cmds, 'del main.shada.tmp.' .. string.char(c))
-  end
-  local cmd = table.concat({ ':term<CR>a',
-    'cd /d "' .. shada_dir:gsub('/', '\\') .. '"<CR>',
-    table.concat(del_cmds, '<CR>'),
-    '<C-\\><C-n><C-o>:echo "Shada Temporary Files Deleted"<CR>'
-  }, '<CR>')
-
-  local keys = vim.api.nvim_replace_termcodes(cmd, true, false, true)
-  vim.api.nvim_feedkeys(keys, 'm', false)
-end, { desc = '[D]elete [S]hada temporary files' })
-
-
--- NOTE: Directory specific configuration
-local dir_config = require 'autodir'
-
---for Noita
-dir_config.directory_autocmd('Noita', function()
-  vk.set(
-    'n',
-    '<leader>nn',
-    '<C-w>k<C-w>k<C-w>k<C-w>o<C-w>o<C-w>o<C-w>o:sp<CR>:term<CR>D:<CR>cd D:/SteamLibrary/steamapps/common/Noita<CR>noita_dev.exe<CR><C-\\><C-n><C-w>18-G<C-w>k',
-    { noremap = true, silent = true, desc = 'Open noita_dev' }
-  )
-  vk.set(
-    'n',
-    '<leader>nt',
-    ':sp<CR>:term<CR>D:<CR>cd D:/SteamLibrary/steamapps/common/Noita/mods/kickining_way<CR>D:/SteamLibrary/steamapps/common/Noita/noita.exe -splice_pixel_scene files/biome_impl/level/wang.png -x 3000 -y 3000<CR><C-\\><C-n>:q<CR><C-w>18+',
-    { noremap = true, silent = true, desc = 'Build map' }
-  )
-end)
-
--- For LOVE
-dir_config.directory_autocmd('LOVE', function()
-  vk.set('n', '<leader>nr', '<cmd>w<cr><cmd>LoveRun<cr>', { desc = 'Run LÖVE' })
-  vk.set('n', '<leader>ns', '<cmd>LoveStop<cr>', { desc = 'Stop LÖVE' })
-end)
-
--- Startup
-vim.g.set_cur_dir = function()
-  vim.cmd('cd ' .. vim.fn.stdpath('config'))
-end
-dir_config.directory_autocmd('WindowsApps', function()
-  vim.g.set_cur_dir()
-end)
-dir_config.directory_autocmd('system32', function()
-  vim.g.set_cur_dir()
-end)
+require('modules.keymaps')
+require('modules.autodir_setup')
 
 -- NOTE: Tab settings
 vim.opt.expandtab = true
@@ -936,5 +628,5 @@ vim.api.nvim_create_autocmd('FileType', {
 vim.api.nvim_set_hl(0, 'MatchParen',
   { underline = true, underdouble = true, undercurl = false, fg = '#bb7744', sp = '#bb7744' })
 
-vim.cmd 'cd %:p:h'
-vim.cmd 'cd'
+-- vim.cmd 'cd %:p:h'
+-- vim.cmd 'cd'

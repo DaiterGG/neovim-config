@@ -1,3 +1,27 @@
+ReversePathFn = function(opts, path)
+  -- Split the tail by the directory separator
+  local path_f = path:gsub('\\', '/')
+  local parts = {}
+  for part in string.gmatch(path_f, '[^/]+') do
+    table.insert(parts, part)
+  end
+
+  -- windows root letter
+  if string.sub(parts[1], -1) == ':' then
+    parts[1] = '[' .. string.upper(parts[1]) .. ']'
+  end
+
+  -- Reverse the parts
+  local reversed_parts = {}
+  for i = #parts, 1, -1 do
+    table.insert(reversed_parts, parts[i])
+  end
+  local tail = table.remove(reversed_parts, 1)
+  local flipped_path = table.concat(reversed_parts, '/')
+
+  return #flipped_path == 0 and tail or (tail .. '   /' .. flipped_path)
+end
+
 if vim.g.vscode then
   return {
     'nvim-telescope/telescope.nvim',
@@ -35,33 +59,7 @@ return {
       --  All the info you're looking for is in `:help telescope.setup()`
       --
       defaults = {
-        path_display = function(opts, path)
-          local tail = require('telescope.utils').path_tail(path)
-
-          -- Split the tail by the directory separator
-          local parts = {}
-          for part in string.gmatch(path, '[^\\]+') do
-            table.insert(parts, part)
-          end
-
-          for part in string.gmatch(path, '[^/]+') do
-            table.insert(parts, part)
-          end
-          if string.sub(parts[1], -1) == ':' then
-            parts[1] = '[' .. string.upper(parts[1]) .. ']'
-          end
-
-          -- Reverse the parts
-          local reversed_parts = {}
-          for i = #parts, 1, -1 do
-            table.insert(reversed_parts, parts[i])
-          end
-          table.remove(reversed_parts, 1)
-
-          local flipped_path = table.concat(reversed_parts, '\\')
-
-          return (tail .. '   \\' .. flipped_path)
-        end,
+        path_display = ReversePathFn,
         layout_strategy = 'horizontal',
         layout_config = {
           horizontal = { width = 0.999, height = 0.999, preview_width = 0.6 },
@@ -118,7 +116,7 @@ return {
 
     -- select current directory
     vim.keymap.set('n', '<leader>sc', function()
-      vim.cmd 'cd %:h'
+      vim.cmd 'cd %:p:h'
       vim.cmd 'cd'
     end, { desc = '[S]elect [C]urrent directory' })
 

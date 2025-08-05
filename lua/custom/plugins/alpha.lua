@@ -201,7 +201,7 @@ return {
       dashboard.button('d', '󰮗  Find file in D:',
         ':cd D: | silent Telescope find_files hidden=true no_ignore=true <CR>'),
       dashboard.button('s', '  Settings', ':cd ' .. init_path .. '<CR>:e init.lua<CR>'),
-      dashboard.button('q', '󰿅  Quit', '<cmd>qa<CR>'),
+      dashboard.button('q', '󰿅  Quit', '<cmd>q<CR>'),
       -- dashboard.button('', ''),
     }
 

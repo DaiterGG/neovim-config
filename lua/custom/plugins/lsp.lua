@@ -168,7 +168,13 @@ return {
           'n',
           'K', -- Override Neovim's built-in hover keymap with rustaceanvim's hover actions
           function()
+            --only for rs files
+            if vim.api.nvim_buf_get_option(bufnr, 'filetype') == 'rs' then
+
             vim.cmd.RustLsp { 'hover', 'actions' }
+          else
+            vim.lsp.buf.hover()
+          end
           end,
           { silent = true, buffer = bufnr }
         )
