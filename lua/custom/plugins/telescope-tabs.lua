@@ -1,6 +1,6 @@
 -- NOTE: attempt to make tabs isolated with stock cd instead of tcd for other plugins support
-TabLastSelect = {}
-TabCwd = {}
+local TabLastSelect = {}
+local TabCwd = {}
 
 local cmd = vim.api.nvim_create_autocmd
 vim.cmd 'silent cd %:p:h'

@@ -170,42 +170,50 @@ return {
           function()
             --only for rs files
             if vim.api.nvim_buf_get_option(bufnr, 'filetype') == 'rs' then
-
-            vim.cmd.RustLsp { 'hover', 'actions' }
-          else
-            vim.lsp.buf.hover()
-          end
+              vim.cmd.RustLsp { 'hover', 'actions' }
+            else
+              vim.lsp.buf.hover()
+            end
           end,
           { silent = true, buffer = bufnr }
         )
 
         vim.keymap.set('n', '<leader>cde', function()
-          vim.cmd.RustLsp 'explainError'
+          pcall(vim.cmd.RustLsp 'explainError')
         end, { silent = true, buffer = bufnr, desc = '[C]ode [D]etailed [E]xplanation [Rust]' })
 
         vim.keymap.set('n', '<leader>cj', function()
-          vim.cmd.RustLsp 'relatedDiagnostics'
+          pcall(vim.cmd.RustLsp 'relatedDiagnostics')
         end, { silent = true, buffer = bufnr, desc = '[C]ode [J]ump to related diagnostics [Rust]' })
 
         vim.keymap.set('n', '<leader>cdc', function()
-          vim.cmd.RustLsp 'openDocs'
+          pcall(vim.cmd.RustLsp 'openDocs')
         end, { silent = true, buffer = bufnr, desc = '[C]ode [D]o[C]umentation [Rust]' })
 
         vim.keymap.set('n', '<leader>cc', function()
-          vim.cmd.RustLsp { 'renderDiagnostic', 'cycle' }
+          pcall(vim.cmd.RustLsp { 'renderDiagnostic', 'cycle' })
         end, { silent = true, buffer = bufnr, desc = '[C]ycle diagnostics [Rust]' })
 
         vim.keymap.set('n', '<leader>cr', function()
-          vim.cmd.RustLsp { 'renderDiagnostic' }
+          pcall(vim.cmd.RustLsp { 'renderDiagnostic' })
         end, { silent = true, buffer = bufnr, desc = '[R]ender current diagnostics [Rust]' })
+
         vim.keymap.set('n', '<leader>nq', ':w<cr>:tabnew<cr>:term<cr>ar<cr><C-\\><C-n>:q<cr>',
           { desc = 'rust run headless without terminal' })
 
-        local open_if_not = '<C-\\><C-n><C-w>h<C-w>o:w<cr>:ToggleTerm<cr>a<cr>'
-        vim.keymap.set('n', '<leader>nc', open_if_not .. 'cargo build<cr><C-\\><C-n>', { desc = 'rust compile' })
-        vim.keymap.set('n', '<leader>nr', open_if_not .. 'cargo run<cr><C-\\><C-n>', { desc = 'rust run' })
-        vim.keymap.set('n', '<leader>nt', open_if_not .. 'cargo test<cr><C-\\><C-n>', { desc = 'rust test' })
-        vim.keymap.set('n', '<leader>nb', open_if_not .. 'cargo bench<cr><C-\\><C-n>', { desc = 'rust bench' })
+        local open_if_not = ':CurTermOpen<CR>'
+        vim.keymap.set('n', '<leader>nc', function()
+          OpenTermThen("cargo build<cr><C-\\><C-n>")
+        end, { desc = 'rust [C]ompile' })
+        vim.keymap.set('n', '<leader>nr', function()
+          OpenTermThen('cargo run<cr><C-\\><C-n>')
+        end, { desc = 'rust run' })
+        vim.keymap.set('n', '<leader>nt', function()
+          OpenTermThen('cargo test<cr><C-\\><C-n>')
+        end, { desc = 'rust test' })
+        vim.keymap.set('n', '<leader>nb', function()
+          OpenTermThen('cargo bench<cr><C-\\><C-n>')
+        end, { desc = 'rust bench' })
       end,
     })
 

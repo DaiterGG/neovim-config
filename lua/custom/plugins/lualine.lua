@@ -153,7 +153,7 @@ return {
         return (tab_count == 1) and "" or ('tabs: ' .. tab_count)
       end,
       icon = '󰓪',
-      color = { bg = colors.green_bright, fg = colors.black },
+      color = { bg = colors.green_select, fg = colors.black },
       padding = { left = 1, right = 1 },
       separator = { right = '▓▒░', left = '░▒▓' },
     }
@@ -187,7 +187,6 @@ return {
         end
         local lsp_lbl = dump(clients_list):gsub('(.*),', '%1')
         local res = lsp_lbl:gsub(',', ', ')
-        active_sections[1] = res ~= ""
         return res
       end,
       icon = '󰒓',
