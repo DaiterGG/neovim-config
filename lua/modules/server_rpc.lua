@@ -55,7 +55,7 @@ local function main_instance()
   end, {})
 
   -- Auto-close server when last window closes
-  -- Alt f4 also works, so not nessary?
+  -- Alt f4 also works, so not necessary?
   vim.api.nvim_create_autocmd("QuitPre", {
     callback = function()
       if vim.fn.tabpagenr('$') <= 1 then

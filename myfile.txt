@@ -1,7 +1,5 @@
 require('modules.server_rpc')
 
--- TODO: toggle termital additional termitals at current cd
-
 -- neovim-tree requires this
 --
 vim.g.loaded_netrw = 1
@@ -249,7 +247,7 @@ require('lazy').setup({
   -- LSP Plugins
   { 'Bilal2453/luvit-meta',   lazy = true },
 
-  require 'kickstart.plugins.dap-debug',
+  require 'kickstart.plugins.debug',
 
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.indent_line',
@@ -427,6 +425,22 @@ require('lazy').setup({
     end,
     -- Uncomment next line if you want to follow only stable versions
     -- version = "*"
+  },
+  {
+    'akinsho/toggleterm.nvim',
+    event = 'VeryLazy',
+    version = '*',
+    opts = {
+      size = 200,
+      open_mapping = [[<leader>tt]],
+      hide_numbers = false,
+      autochdir = true,
+      persistent_size = false,
+      start_in_insert = true,
+      insert_mappings = false,  -- whether or not the open mapping applies in insert mode
+      terminal_mappings = true, -- whether or not the open mapping applies in the opened terminals
+      direction = 'vertical',
+    },
   },
   {
     'mrcjkb/rustaceanvim',
@@ -614,11 +628,5 @@ vim.api.nvim_create_autocmd('FileType', {
 vim.api.nvim_set_hl(0, 'MatchParen',
   { underline = true, underdouble = true, undercurl = false, fg = '#bb7744', sp = '#bb7744' })
 
-vim.api.nvim_create_autocmd("BufEnter", {
-  callback = function()
-    vim.opt.formatoptions = vim.opt.formatoptions - { "c", "r", "o" } -- disable comment continuation on new line
-  end,
-
-})
 vim.cmd 'cd %:p:h'
 vim.cmd 'cd'
