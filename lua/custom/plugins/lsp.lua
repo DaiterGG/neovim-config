@@ -78,6 +78,8 @@ return {
         vim.keymap.del('n', 'grr')
         vim.keymap.del('n', 'grn')
 
+        vim.api.nvim_set_hl(0, 'markdownError',
+          { link = nil })
 
         -- Jump to the implementation of the word under your cursor.
         --  Useful when your language has ways of declaring types without an actual implementation.
@@ -178,21 +180,21 @@ return {
           { silent = true, buffer = bufnr }
         )
 
-        vim.keymap.set('n', '<leader>cde', function()
+        vim.keymap.set('n', '<leader>ce', function()
           pcall(vim.cmd.RustLsp 'explainError')
-        end, { silent = true, buffer = bufnr, desc = '[C]ode [D]etailed [E]xplanation [Rust]' })
+        end, { silent = true, buffer = bufnr, desc = '[C]ode [H]elp with error [Rust]' })
 
         vim.keymap.set('n', '<leader>cj', function()
           pcall(vim.cmd.RustLsp 'relatedDiagnostics')
         end, { silent = true, buffer = bufnr, desc = '[C]ode [J]ump to related diagnostics [Rust]' })
 
-        vim.keymap.set('n', '<leader>cdc', function()
+        vim.keymap.set('n', '<leader>ci', function()
           pcall(vim.cmd.RustLsp 'openDocs')
-        end, { silent = true, buffer = bufnr, desc = '[C]ode [D]o[C]umentation [Rust]' })
+        end, { silent = true, buffer = bufnr, desc = '[C]ode [I]nfo [Rust]' })
 
         vim.keymap.set('n', '<leader>cc', function()
           pcall(vim.cmd.RustLsp { 'renderDiagnostic', 'cycle' })
-        end, { silent = true, buffer = bufnr, desc = '[C]ycle diagnostics [Rust]' })
+        end, { silent = true, buffer = bufnr, desc = '[C]ode [C]ycle diagnostics [Rust]' })
 
         vim.keymap.set('n', '<leader>cr', function()
           pcall(vim.cmd.RustLsp { 'renderDiagnostic' })
@@ -201,7 +203,6 @@ return {
         vim.keymap.set('n', '<leader>nq', ':w<cr>:tabnew<cr>:term<cr>ar<cr><C-\\><C-n>:q<cr>',
           { desc = 'rust run headless without terminal' })
 
-        local open_if_not = ':CurTermOpen<CR>'
         vim.keymap.set('n', '<leader>nc', function()
           OpenTermThen("cargo build<cr><C-\\><C-n>")
         end, { desc = 'rust [C]ompile' })
@@ -240,6 +241,12 @@ return {
         --   client.server_capabilities.semanticTokensProvider = nil -- turn off semantic tokens
         -- end,
         filetypes = { 'glsl', 'conf', 'shader', 'gdshader', 'vert', 'frag' },
+      },
+      typos_lsp = {
+        filetypes = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' },
+        root_markers = {},
+        -- filetypes = { 'rs' },
+        -- root_markers = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' }
       },
       -- standardjs = {
       --   filetypes = { 'js' },
@@ -341,6 +348,7 @@ return {
     --   end,
     -- }
     require('mason-lspconfig').setup {
+      -- automatic_enable = false,
       handlers = {
         function(server_name)
           local server = servers[server_name] or {}

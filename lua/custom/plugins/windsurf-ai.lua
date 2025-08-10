@@ -1,9 +1,9 @@
 return {
   'Exafunction/windsurf.nvim',
-  -- dependencies = {
-  --   'nvim-lua/plenary.nvim',
-  --   'hrsh7th/nvim-cmp',
-  -- },
+  dependencies = {
+    'nvim-lua/plenary.nvim',
+    'hrsh7th/nvim-cmp',
+  },
   event = 'InsertEnter',
   config = function()
     vim.api.nvim_set_hl(0, 'CodeiumSuggestion', { undercurl = false, fg = '#5f875f' })

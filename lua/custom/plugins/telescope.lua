@@ -114,17 +114,6 @@ return {
     vim.api.nvim_set_keymap('n', '<Leader>h', [[<cmd>lua require('telescope').extensions.recent_files.pick()<CR>]],
       { desc = 'Recent Files' })
 
-    -- select current directory
-    vim.keymap.set('n', '<leader>sc', function()
-      vim.cmd 'cd %:p:h'
-      vim.cmd 'cd'
-    end, { desc = '[S]elect [C]urrent directory' })
-
-    vim.keymap.set('n', '<leader>b', function()
-      vim.cmd 'cd ..'
-      vim.cmd 'cd'
-    end, { desc = 'Go [B]ack' })
-
     -- select C:/ directory
     vim.keymap.set('n', '<leader>sC', function()
       vim.cmd 'cd C:/'

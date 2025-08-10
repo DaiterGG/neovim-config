@@ -1,15 +1,20 @@
 return {
-
   'rebelot/terminal.nvim',
-  -- init = function ()
-
-  -- end
   event = 'VeryLazy',
   config = function()
     local map = vim.keymap.set
     local cmd = vim.api.nvim_create_autocmd
 
-    require("terminal").setup({ autoclose = true })
+    require("terminal").setup(
+      {
+        autoclose = true,
+        layout = {
+          open_cmd = "float",
+          -- border = "rounded",
+          height = 0.97,
+          width = 1.0
+        }
+      })
 
     local TabTerm = {}
     TabTerm[vim.api.nvim_get_current_tabpage()] = { is_on = false }
@@ -25,30 +30,63 @@ return {
       end,
     })
 
-    local term_layout = { open_cmd = "float", height = 1.0, width = 1.0 }
     -- toggle fn for kemap
     local toggle_term = function()
       local tab_id = vim.api.nvim_get_current_tabpage()
       local term = TabTerm[tab_id]
-      local toggle = not term.is_on
-      term.is_on = toggle
-      local term_id = term.id
-      if toggle then
-        if term_id == nil then
-          require("terminal").run('', { layout = term_layout })
-          term.id = require("terminal").current_term_index()
-        else
-          require("terminal").open(tab_id)
-        end
-
-        local keys = vim.api.nvim_replace_termcodes("a", true, true, true)
-        vim.api.nvim_feedkeys(keys, 'm', false)
-      else
+      local now_is_on = not term.is_on
+      term.is_on = now_is_on
+      if not now_is_on then
         require("terminal").close()
+        return
       end
+
+      if term.id == nil then
+        require("terminal").run('')
+        term.id = require("terminal").current_term_index()
+      else
+        require("terminal").open(term.id)
+      end
+
+      local keys = vim.api.nvim_replace_termcodes("a", true, true, true)
+      vim.api.nvim_feedkeys(keys, 'm', false)
     end
     map('n', '<leader>tt', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
-    map('t', '<A-t>', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+    map('t', '<leader>tt', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+
+    -- NOTE: Select Current Directory
+    vim.keymap.set('n', '<leader>cd', function()
+      local tab_id = vim.api.nvim_get_current_tabpage()
+      local term = TabTerm[tab_id]
+      if term.is_on then
+        local cwd = vim.fn.getcwd()
+        OpenTermThen('cd /d "' .. cwd .. '"<cr>')
+      else
+        vim.cmd 'cd %:p:h'
+        vim.cmd 'cd'
+      end
+    end, { desc = '[C]urrent [D]irectory' })
+
+    map('t', '<leader>cd', function ()
+      local cwd = vim.fn.getcwd()
+      OpenTermThen('cd /d "' .. cwd .. '"<cr>')
+    end, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+
+    -- NOTE: Go Back
+    vim.keymap.set('t', '<leader>b', function()
+        OpenTermThen('cd ..<cr>')
+    end, { desc = 'cd [B]ack' })
+
+    vim.keymap.set('n', '<leader>b', function()
+      local tab_id = vim.api.nvim_get_current_tabpage()
+      local term = TabTerm[tab_id]
+      if term.is_on then
+        OpenTermThen('cd ..<cr>')
+      else
+        vim.cmd 'cd ..'
+        vim.cmd 'cd'
+      end
+    end, { desc = 'cd [B]ack' })
 
 
     -- open if needed and focus terminal
@@ -60,7 +98,7 @@ return {
         term.is_on = true
         local term_id = term.id
         if term_id == nil then
-          require("terminal").run('', { layout = term_layout })
+          require("terminal").run('')
           term.id = require("terminal").current_term_index()
         else
           require("terminal").open(tab_id)
@@ -79,7 +117,6 @@ return {
 }
 
 
--- my old open terminal command
 -- map('n', '<leader>nt', '<C-w>99l<C-w>99k<C-w>o:8 split<CR>:term<CR>', { noremap = true, silent = true, desc = '[N]ew [T]erminal tile' })
 
 -- return {

@@ -141,9 +141,18 @@ return {
       table.insert(config.sections.lualine_c, component)
     end
 
+    -- insert inactive component in lualine_c at left section
+    local function inactive_left(component)
+      table.insert(config.inactive_sections.lualine_c, component)
+    end
+
     -- insert active component in lualine_x at right section
     local function active_right(component)
       table.insert(config.sections.lualine_x, component)
+    end
+    -- insert inactive component in lualine_x at right section
+    local function inactive_right(component)
+      table.insert(config.inactive_sections.lualine_x, component)
     end
 
     -- active right section
@@ -179,15 +188,22 @@ return {
     active_right {
       function()
         local clients = vim.lsp.get_clients()
-        local clients_list = {}
-        for _, client in pairs(clients) do
-          if not clients_list[client.name] then
-            table.insert(clients_list, client.name)
-          end
+        local count_map = {}
+        -- Count occurrences of each client name
+        for _, client in ipairs(clients) do
+          local name = client.name
+          count_map[name] = (count_map[name] or 0) + 1
         end
-        local lsp_lbl = dump(clients_list):gsub('(.*),', '%1')
-        local res = lsp_lbl:gsub(',', ', ')
-        return res
+
+        local formatted = {}
+        for name, count in pairs(count_map) do
+          if name == 'lua_ls' then name = 'lua' end
+          if name == 'typos_lsp' then name = 'typo' end
+          if name == 'rust-analyzer' then name = 'rust' end
+          table.insert(formatted, name .. (count > 1 and " x" .. count or ""))
+        end
+
+        return table.concat(formatted, ", ")
       end,
       icon = '󰒓',
       color = { bg = colors.green_bright, fg = colors.black },
@@ -332,6 +348,50 @@ return {
       separator = { right = '▓▒░', left = '░▒▓' },
     }
 
+    -- inactive left section
+    inactive_left {
+      function()
+        return ''
+      end,
+      cond = conditions.buffer_not_empty,
+      color = { bg = colors.black, fg = colors.grey },
+      padding = { left = 1, right = 1 },
+    }
+    inactive_left {
+      'filename',
+      cond = conditions.buffer_not_empty,
+      color = { bg = colors.black, fg = colors.grey },
+      padding = { left = 1, right = 1 },
+      separator = { right = '▓▒░' },
+      symbols = {
+        modified = '',
+        readonly = '',
+        unnamed = '',
+        newfile = '',
+      },
+    }
+
+    -- inactive right section
+    inactive_right {
+      'location',
+      color = { bg = colors.black, fg = colors.grey },
+      padding = { left = 1, right = 0 },
+      separator = { left = '░▒▓' },
+    }
+    inactive_right {
+      'progress',
+      color = { bg = colors.black, fg = colors.grey },
+      padding = { left = 1, right = 1 },
+      separator = { right = '▓▒░' },
+    }
+    inactive_right {
+      'fileformat',
+      fmt = string.lower,
+      icons_enabled = false,
+      color = { bg = colors.black, fg = colors.grey },
+      separator = { right = '▓▒░' },
+      padding = { left = 0, right = 1 },
+    }
     return config
   end,
 }

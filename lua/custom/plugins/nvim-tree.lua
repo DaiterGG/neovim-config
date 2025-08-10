@@ -19,6 +19,8 @@ return {
           local pwd = 'NvimTreeToggle ' .. vim.fn.getcwd()
           vim.cmd('' .. pwd)
           vim.cmd('' .. pwd)
+          local keys = vim.api.nvim_replace_termcodes("<C-w>l<C-w>l", true, true, true)
+          vim.api.nvim_feedkeys(keys, 'm', false)
         end
       end
     })
@@ -66,13 +68,13 @@ return {
         vim.keymap.set('n', leader .. '<', api.node.navigate.sibling.prev, opts 'Previous Sibling')
         vim.keymap.set('n', leader .. '.', api.node.run.cmd, opts 'Run Command')
         vim.keymap.set('n', leader .. 'b', api.tree.change_root_to_parent, opts '2. CD ..')
-        vim.keymap.set('n', leader .. 'c', api.fs.create, opts '2. Create File Or Directory')
+        vim.keymap.set('n', leader .. 'n', api.fs.create, opts '2. Create File Or Directory')
         -- vim.keymap.set('n', leader .. 'bd', api.marks.bulk.delete, opts 'Delete Bookmarked')
         -- vim.keymap.set('n', leader .. 'bt', api.marks.bulk.trash, opts 'Trash Bookmarked')
         -- vim.keymap.set('n', leader .. 'bmv', api.marks.bulk.move, opts 'Move Bookmarked')
         -- vim.keymap.set('n', leader .. 'B', api.tree.toggle_no_buffer_filter, opts 'Toggle Filter: No Buffer')
         vim.keymap.set('n', leader .. 'y', api.fs.copy.node, opts '1. Copy')
-        -- vim.keymap.set('n', 'C', api.tree.toggle_git_clean_filter, opts 'Toggle Filter: Git Clean')
+        vim.keymap.set('n', '<leader>tg', api.tree.toggle_git_clean_filter, opts '3. [T]oggle Filter: [G]it Clean')
         -- vim.keymap.set('n', '[c', api.node.navigate.git.prev, opts 'Prev Git')
         -- vim.keymap.set('n', ']c', api.node.navigate.git.next, opts 'Next Git')
         vim.keymap.set('n', leader .. 'd', api.fs.remove, opts '1. Delete')
@@ -95,14 +97,24 @@ return {
         vim.keymap.set('n', leader .. 'm', api.marks.toggle, opts 'Toggle Bookmark')
         vim.keymap.set('n', 'o', api.node.open.edit, opts '2. Open')
         -- vim.keymap.set('n', 'O', api.node.open.no_window_picker, opts 'Open: No Window Picker')
-        vim.keymap.set('n', 'O', api.tree.change_root_to_node, opts '2. CD current node')
+        vim.keymap.set('n', 'O', api.tree.change_root_to_node, opts '2. Root current node')
+        vim.keymap.set('n', '<leader>cd', function()
+          api.fs.copy.absolute_path()
+          local path = vim.fn.getreg("+")
+          -- remove file name if path has file
+          if string.find(path, '[^/]+$') then
+            path = string.gsub(path, '[^/]+$', '')
+          end
+          local keys = vim.api.nvim_replace_termcodes(":cd " .. path .. "<cr>", true, true, true)
+          vim.api.nvim_feedkeys(keys, 'm', false)
+        end, opts '2. CD current node')
         vim.keymap.set('n', leader .. 'p', api.fs.paste, opts '1. Paste')
         vim.keymap.set('n', leader .. 'q', api.tree.close, opts 'Close')
         vim.keymap.set('n', leader .. '<C-c>', api.tree.close, opts 'Close')
         vim.keymap.set('n', leader .. 'r', api.fs.rename, opts '1. Rename')
         vim.keymap.set('n', leader .. 'R', api.tree.reload, opts 'Refresh')
         -- vim.keymap.set('n', 's', api.node.run.system, opts 'Run System')
-        -- realy bad search
+        -- really bad search
         -- vim.keymap.set('n', 's', api.tree.search_node, opts 'Search')
         -- vim.keymap.set('n', 'u', api.fs.rename_full, opts 'Rename: Full Path')
         -- vim.keymap.set('n', 'U', api.tree.toggle_custom_filter, opts 'Toggle Filter: Hidden')

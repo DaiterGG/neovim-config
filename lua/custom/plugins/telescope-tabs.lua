@@ -75,6 +75,9 @@ return {
         return time_a > time_b
       end
     }
+    vim.keymap.set('t', '<leader>u', function()
+      require('telescope-tabs').list_tabs()
+    end)
     vim.keymap.set('n', '<leader>u', function()
       require('telescope-tabs').list_tabs()
     end)

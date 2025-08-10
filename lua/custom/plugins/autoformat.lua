@@ -16,7 +16,7 @@ return { -- Autoformat
     --Auto formatting
     vim.api.nvim_create_autocmd('BufWritePre', {
       callback = function()
-        -- Manual formating
+        -- Manual formatting
         vim.keymap.set('n', '<leader>f', function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end, { noremap = true, silent = true, desc = '[F]ormat Document' })
