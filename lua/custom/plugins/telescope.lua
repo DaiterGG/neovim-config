@@ -53,6 +53,7 @@ return {
     { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
   },
   config = function()
+    vim.api.nvim_create_user_command("TLast", 'Telescope resume', {})
     require('telescope').load_extension 'recent_files'
     require('telescope').setup {
       -- You can put your default mappings / updates / etc. in here

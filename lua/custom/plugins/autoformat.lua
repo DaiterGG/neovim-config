@@ -13,13 +13,13 @@ return { -- Autoformat
     end
     ToggleFormatF()
 
+    -- Manual formatting
+    vim.keymap.set('n', '<leader>f', function()
+      require('conform').format { async = true, lsp_format = 'fallback' }
+    end, { noremap = true, silent = true, desc = '[F]ormat Document' })
     --Auto formatting
     vim.api.nvim_create_autocmd('BufWritePre', {
       callback = function()
-        -- Manual formatting
-        vim.keymap.set('n', '<leader>f', function()
-          require('conform').format { async = true, lsp_format = 'fallback' }
-        end, { noremap = true, silent = true, desc = '[F]ormat Document' })
         if FormatOnSaveIsOn then
           require('conform').format { async = false, lsp_format = 'fallback' }
         end

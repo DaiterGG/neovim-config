@@ -48,6 +48,9 @@ cmd("TabEnter", {
 for _, tab_id in ipairs(vim.api.nvim_list_tabpages()) do
   TabLastSelect[tab_id] = TabLastSelect[tab_id] or vim.loop.now()
 end
+vim.api.nvim_create_user_command("T", function()
+  vim.cmd("tabnew")
+end, {})
 
 return {
   -- 'LukasPietzschmann/telescope-tabs',
@@ -75,7 +78,7 @@ return {
         return time_a > time_b
       end
     }
-    vim.keymap.set('t', '<leader>u', function()
+    vim.keymap.set('t', '<A-u>', function()
       require('telescope-tabs').list_tabs()
     end)
     vim.keymap.set('n', '<leader>u', function()

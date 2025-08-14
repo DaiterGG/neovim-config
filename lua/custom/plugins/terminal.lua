@@ -52,7 +52,10 @@ return {
       vim.api.nvim_feedkeys(keys, 'm', false)
     end
     map('n', '<leader>tt', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
-    map('t', '<leader>tt', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+    -- map('t', '<leader>tt', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+    map('t', '<A-t>', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+
+    map('t', '<A-;>', '<C-\\><C-n>:', { noremap = true, silent = true })
 
     -- NOTE: Select Current Directory
     vim.keymap.set('n', '<leader>cd', function()
@@ -67,14 +70,45 @@ return {
       end
     end, { desc = '[C]urrent [D]irectory' })
 
-    map('t', '<leader>cd', function ()
+    map('t', '<A-c><A-d>', function()
       local cwd = vim.fn.getcwd()
       OpenTermThen('cd /d "' .. cwd .. '"<cr>')
-    end, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+    end, { noremap = true, silent = true })
+
+    -- NOTE: new tab with terminal
+    vim.api.nvim_create_user_command("TTerm", function()
+      vim.cmd("tabnew")
+      vim.cmd("terminal")
+    end, {})
+    vim.api.nvim_create_user_command("TTerm2", function()
+      vim.cmd("tabnew")
+      vim.cmd("terminal")
+      vim.cmd("split")
+      vim.cmd("terminal")
+    end, {})
+    vim.api.nvim_create_user_command("TTerm3", function()
+      vim.cmd("tabnew")
+      vim.cmd("terminal")
+      vim.cmd("split")
+      vim.cmd("terminal")
+      vim.cmd("vsplit")
+      vim.cmd("terminal")
+    end, {})
+    vim.api.nvim_create_user_command("TTerm4", function()
+      vim.cmd("tabnew")
+      vim.cmd("terminal")
+      vim.cmd("split")
+      vim.cmd("terminal")
+      vim.cmd("vsplit")
+      vim.cmd("terminal")
+
+      local keys = vim.api.nvim_replace_termcodes("<C-w>k:vsplit<cr>:terminal<cr>", true, true, true)
+      vim.api.nvim_feedkeys(keys, 'm', false)
+    end, {})
 
     -- NOTE: Go Back
-    vim.keymap.set('t', '<leader>b', function()
-        OpenTermThen('cd ..<cr>')
+    vim.keymap.set('t', '<A-b>', function()
+      OpenTermThen('cd ..<cr>')
     end, { desc = 'cd [B]ack' })
 
     vim.keymap.set('n', '<leader>b', function()
@@ -87,7 +121,6 @@ return {
         vim.cmd 'cd'
       end
     end, { desc = 'cd [B]ack' })
-
 
     -- open if needed and focus terminal
     OpenTermOrNot = function()
