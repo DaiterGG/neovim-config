@@ -146,13 +146,13 @@ return {
       end
     end, opts)
 
-    vim.keymap.set(
-      'v',
-      '<leader>/',
-      -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-      'y<leader>/<C-r>">',
-      { remap = true, desc = '[/] Fuzzily search in current buffer' }
-    )
+    -- vim.keymap.set(
+    --   'v',
+    --   '<leader>/',
+    --   -- You can pass additional configuration to Telescope to change the theme, layout, etc.
+    --   'y<leader>/<C-r>">',
+    --   { remap = true, desc = '[/] Fuzzily search in current buffer' }
+    -- )
 
     -- It's also possible to pass additional configuration options.
     --  See `:help telescope.builtin.live_grep()` for information about particular keys

@@ -1,5 +1,7 @@
-<C-r>= on insert mode
+<C-r> = on insert mode
 init_selection = "ga",
 node_incremental = "ga",
 node_decremental = "gs",
-spelling z=
+q:
+
+dril to drill

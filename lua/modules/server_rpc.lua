@@ -41,15 +41,19 @@ end
 local function main_instance()
   -- NOTE: Close the server manually, to open nvim in a separate window
   vim.api.nvim_create_user_command("ServerStop", function()
-    pcall(vim.fn.serverstop, pipe_name)
+    local _, closed = pcall(vim.fn.serverstop, pipe_name)
+    if closed == 0 then
+      vim.notify("There was no server to stop", vim.log.levels.WARN)
+    else
+      vim.notify("Server stopped, run :ServerStart to start again")
+    end
 
-    vim.notify("Server Stopped, run :ServerStart to start again")
 
     vim.api.nvim_create_user_command("ServerStart", function()
       if is_main_instance() then
-        vim.notify("Server Started Again")
+        vim.notify("Server started again")
       else
-        vim.notify("Failed, Server Started In Some Other Neovim")
+        vim.notify("Failed, server started in some other neovim")
       end
     end, {})
   end, {})

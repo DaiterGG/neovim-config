@@ -6,8 +6,11 @@ map({ 'i', 'n' }, '<f10>', function()
   end,
   {})
 
+-- NOTE: All modes keymaps
+
 -- NOTE: Command mode keymap
-map('c', '<C-n>', '<C-t><C-h>', { remap = true })
+
+-- map('c', '<C-n>', '<C-t><C-h>', { remap = true })
 
 map('c', '<A-h>', '<down>', { noremap = false })
 map('c', '<A-t>', '<up>', { noremap = false })
@@ -15,7 +18,8 @@ map('c', '<A-e>', '<left>', { noremap = false })
 map('c', '<A-u>', '<right>', { noremap = false })
 
 -- NOTE: Terminal mode keymap
-map('t', '<C-c>', '<C-\\><C-n>', opts)
+
+-- map('t', '<C-c>', '<C-\\><C-n>', opts)
 map('t', '<A-c>', '<C-c>', { remap = false })
 
 map('t', '<Esc>', '<C-\\><C-n>', opts)
@@ -35,7 +39,8 @@ map('t', '<A-+>', '<C-\\><C-n><C-w>+a', { remap = true })
 map('t', '<A-->', '<C-\\><C-n><C-w>-a', { remap = true })
 
 -- NOTE: Insert mode keymap
-map('i', '<C-c>', '<Esc>', opts)
+
+-- map('i', '<C-c>', '<Esc>', opts)
 
 map('i', '<C-p>', '<C-r>"', opts)
 
@@ -43,7 +48,8 @@ map('i', '<C-p>', '<C-r>"', opts)
 map('i', '<A-w>', '<C-\\><C-n><cmd>w<CR>', { silent = true })
 
 -- NOTE: Visual mode keymap
-map('v', '<C-c>', '<Esc>', opts)
+
+-- map('v', '<C-c>', '<Esc>', opts)
 
 map('v', 'k', 't', opts)
 map('v', 't', 'gk', opts) -- up
@@ -79,7 +85,8 @@ map('v', '<C-r>', '"1y:%s/<C-r>1/<C-r>1/gc<Left><Left><Left>', { desc = 'Replace
 -- map('v', '<C-_>', 'y/<C-r>"<CR>', { remap = true })
 -- NOTE: Normal mode keymap
 
-map('n', '<C-c>', '<Esc>:noh<cr>', opts)
+map('n', '*', 'viw*<C-\\><C-n>')
+-- map('n', '<C-c>', '<Esc>:noh<cr>', opts)
 
 map('n', '<CR>', 'A<CR><Esc>', opts)
 
@@ -127,7 +134,7 @@ map('n', '<C-u>', '6l', opts)
 map('n', '<C-h>', '6gj', opts)
 map('n', '<C-t>', '6gk', opts)
 
-map('n', '<leader>s<C-c>', '', opts)
+-- map('n', '<leader>s<C-c>', '', opts)
 -- MoveLine
 -- map('n', 'H', ':m .+1<CR>==', opts)
 -- map('n', 'T', ':m .-2<CR>==', opts)

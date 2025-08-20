@@ -12,7 +12,8 @@ return {
     { 'j-hui/fidget.nvim',                         event = 'BufRead',    opts = {} },
 
     -- Allows extra capabilities provided by nvim-cmp
-    { 'hrsh7th/cmp-nvim-lsp',                      event = 'BufRead' }
+    -- { 'hrsh7th/cmp-nvim-lsp',                      event = 'BufRead' }
+    { 'saghen/blink.cmp',                          event = 'BufRead' }
   },
   config = function()
     HighlightOn = true
@@ -116,7 +117,7 @@ return {
         --
         -- When you move your cursor, the highlights will be cleared (the second autocommand).
 
-        if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+        if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
           local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
           vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
             buffer = event.buf,
@@ -160,9 +161,12 @@ return {
     --  By default, Neovim doesn't support everything that is in the LSP specification.
     --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
     --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-    capabilities.textDocument.completion.completionItem.snippetSupport = true
+    -- local capabilities = vim.lsp.protocol.make_client_capabilities()
+    local capabilities = require('blink.cmp').get_lsp_capabilities()
+
+
+    -- capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+    -- capabilities.textDocument.completion.completionItem.snippetSupport = true
 
     -- Enable the following language servers
     --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -226,7 +230,13 @@ return {
       -- clangd = {},
       -- gopls = {},
       -- pyright = {},
-      -- rust_analyzer = {},
+      -- rust_analyzer = {
+      --   init_options = {
+      --     completion = {
+      --       placeholder = false,
+      --     },
+      --   },
+      -- },
       -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
 
       lua_ls = {

@@ -1,9 +1,10 @@
 require('modules.server_rpc')
 
--- TODO: toggle termital additional termitals at current cd
+-- TODO:
+--[[
+]] --
 
 -- neovim-tree requires this
---
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.swapfile = false
@@ -249,12 +250,11 @@ require('lazy').setup({
   -- LSP Plugins
   { 'Bilal2453/luvit-meta',   lazy = true },
 
-  require 'kickstart.plugins.dap-debug',
 
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
@@ -382,27 +382,25 @@ require('lazy').setup({
     'mbbill/undotree',
     event = 'VeryLazy',
     config = function()
-      vim.cmd [[
-        let g:undotree_WindowLayout=1
-            let g:undotree_DiffpanelHeight=10
-            " let g:undotree_DiffCommand = "delta"
-            let g:undotree_SetFocusWhenToggle = 1
-            let g:undotree_DiffCommand = "FC"
-            let g:undotree_DiffAutoOpen = 0
+      vim.g.undotree_WindowLayout = 1
+      vim.g.undotree_DiffpanelHeight = 10
+      -- vim.g.undotree_DiffCommand = "delta"
+      vim.g.undotree_SetFocusWhenToggle = 1
+      vim.g.undotree_DiffCommand = "FC"
+      vim.g.undotree_DiffAutoOpen = 0
 
-            " if has("persistent_undo")
-            "     let target_path = expand('~/.undodir')
+      -- if has("persistent_undo")
+      --     let target_path = expand('~/.undodir')
 
-            "     " create the directory and any parent directories
-            "     " if the location does not exist.
-            "     if !isdirectory(target_path)
-            "         call mkdir(target_path, "p", 0700)
-            "     endif
+      --     " create the directory and any parent directories
+      --     " if the location does not exist.
+      --     if !isdirectory(target_path)
+      --         call mkdir(target_path, "p", 0700)
+      --     endif
 
-            "     let &undodir=target_path
-            "     set undofile
-            " endif
-        ]]
+      --     let &undodir=target_path
+      --     set undofile
+      -- endif
       vk.set('n', '<leader>tl', vim.cmd.UndotreeToggle, { desc = '[T]oggle [Undo] tree' })
     end,
   },
@@ -430,11 +428,11 @@ require('lazy').setup({
   },
   {
     'mrcjkb/rustaceanvim',
-    version = '^6', -- Recommended
-    lazy = false,   -- This plugin is already lazy
+    -- version = '^6', -- Recommended
+    lazy = false, -- This plugin is already lazy
 
     -- debugger setup
-    --   config = function()
+    -- config = function()
     --     local mason_reg = require 'mason-registry'
     --     local codelldb = mason_reg.get_package 'codelldb'
     --     local extension_path = codelldb:get_install_handle() .. '/extension/'
@@ -448,9 +446,10 @@ require('lazy').setup({
     --     vim.g.rustaceanvim = {
     --       dap = { adapter = cfg.get_codelldb_adapter(codelldb_path) },
     --     }
-    --   end,
+    -- end,
   },
   -- NOTE: debugger setup (there is a default config in kickstarter)
+  require 'kickstart.plugins.dap-debug',
   -- {
   --   event = 'BufReadPost',
   --   'mfussenegger/nvim-dap',
@@ -581,8 +580,8 @@ vim.opt.smartindent = true
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.modeline = false
-vim.cmd 'set expandtab'
-vim.cmd [[autocmd FileType * set expandtab]]
+-- vim.cmd 'set expandtab'
+-- vim.cmd [[autocmd FileType * set expandtab]]
 
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'cs', -- For C# files

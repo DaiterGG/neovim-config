@@ -51,9 +51,9 @@ return {
       local keys = vim.api.nvim_replace_termcodes("a", true, true, true)
       vim.api.nvim_feedkeys(keys, 'm', false)
     end
-    map('n', '<leader>tt', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+    map('n', '<A-n>', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
     -- map('t', '<leader>tt', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
-    map('t', '<A-t>', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
+    map('t', '<A-n>', toggle_term, { noremap = true, silent = true, desc = '[T]oggle [T]erminal' })
 
     map('t', '<A-;>', '<C-\\><C-n>:', { noremap = true, silent = true })
 

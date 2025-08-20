@@ -20,9 +20,29 @@ end)
 
 -- NT_EW
 dir_config.directory_autocmd('noita_entangled_worlds', function()
-  map('n', '<leader>ns', function()
-    OpenTermThen('set NP_DISABLE_STEAM=1 & set NP_SKIP_MOD_CHECK=1 & set NP_NOITA_ADDR=127.0.0.1:21251')
-  end, { desc = 'Setup' })
+  map('n', '<leader>ns', '<cr>set NP_DISABLE_STEAM=1 & set NP_SKIP_MOD_CHECK=1 & set NP_NOITA_ADDR=127.0.0.1:21251'
+  , { desc = 'Setup' })
+  vim.api.nvim_create_user_command("NN", function()
+    local re = '<C-\\><C-n>a'
+    local keys = vim.api.nvim_replace_termcodes(
+      ':cd D:\\desk\\noita_entangled_worlds\\<cr>' ..
+      ':TTerm3<CR><C-w>k' ..
+      'acd noita-proxy<cr>' ..
+      'set NP_DISABLE_STEAM=1 & set NP_SKIP_MOD_CHECK=1 & set NP_NOITA_ADDR=127.0.0.1:21251<cr>' ..
+      'cargo run' ..
+      '<C-\\><C-n><C-w>j' ..
+      'acd ewext<cr>' ..
+      'cargo ' .. re .. 'build --release --target i686-pc-windows-msvc ' ..
+      '& copy D:\\desk\\noita_entangled_worlds\\ewext\\target\\i686-pc-windows-msvc\\release\\ewext.dll C:\\"Program Files (x86)"\\Steam\\steamapps\\common\\Noita\\mods\\quant.ew\\ /y' ..
+      '<C-\\><C-n><C-w>l' ..
+      'acd noita-proxy<cr>' ..
+      'set NP_DISABLE_STEAM=1 & set NP_SKIP_MOD_CHECK=1 & set NP_NOITA_ADDR=127.0.0.1:21252<cr>' ..
+      'cargo run' ..
+      -- '' ..
+      '', true, true, true)
+
+    vim.api.nvim_feedkeys(keys, 'm', false)
+  end, {})
 end)
 -- For LOVE
 dir_config.directory_autocmd('LOVE', function()
